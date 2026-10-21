@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Montée en véhicule</title>
+<meta name="description" content="Contrôle des engins à la prise de garde — CS Cruzy / Quarante">
+<meta name="theme-color" content="#0b0d11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Montée véhicule">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0d11; --bg2:#10131a; --panel:#151922; --panel2:#1b202b; --line:#262c39; --line2:#323a4a;
+  --txt:#f2f4f8; --mut:#8d95a8; --mut2:#5f677a;
+  --red:#e5232c; --red2:#ff4a50; --redd:#8f0f16;
+  --amb:#ffae1f; --grn:#27cf7c; --blue:#3d8bff;
+  --r:18px; --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+  --cond:'Barlow Condensed','Arial Narrow',sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.4 'Barlow',system-ui,sans-serif}
+body{min-height:100vh;overflow-x:hidden;
+  background:radial-gradient(900px 420px at 85% -120px,rgba(229,35,44,.22),transparent 70%),
+             radial-gradient(700px 360px at -10% -80px,rgba(255,120,40,.08),transparent 70%),var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--txt)}
+svg{display:block}
+.ico{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.hidden{display:none!important}
+#app{max-width:680px;margin:0 auto;padding:calc(var(--safe-t) + 0px) 16px calc(110px + var(--safe-b))}
+
+/* ---------- en-tête ---------- */
+.top{display:flex;align-items:center;gap:12px;padding:14px 0 10px;position:sticky;top:0;z-index:20;
+  background:linear-gradient(var(--bg) 70%,transparent);margin:0 -16px;padding-left:16px;padding-right:16px}
+.top .emb{width:42px;height:42px}
+.top .tt{flex:1;min-width:0}
+.top h1{margin:0;font:800 21px/1 var(--cond);letter-spacing:.04em;text-transform:uppercase}
+.top small{display:block;color:var(--mut);font-size:13px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-sync{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--mut);padding:7px 10px;border-radius:99px;background:var(--panel);border:1px solid var(--line)}
+.chip-sync .dot{width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 3px rgba(39,207,124,.18)}
+.chip-sync.off .dot{background:var(--amb);box-shadow:0 0 0 3px rgba(255,174,31,.18)}
+.chip-sync.demo .dot{background:var(--blue);box-shadow:0 0 0 3px rgba(61,139,255,.18)}
+.chip-sync.spin .ico{animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ---------- blocs ---------- */
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.sec-t{font:700 14px/1 var(--cond);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:26px 2px 12px;display:flex;align-items:center;gap:8px}
+.sec-t b{color:var(--txt)}
+.sec-t .ln{flex:1;height:1px;background:var(--line)}
+.muted{color:var(--mut)}
+.small{font-size:13px}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 20px;border-radius:14px;
+  font-weight:700;font-size:16px;background:var(--panel2);border:1px solid var(--line2);transition:transform .12s,filter .12s}
+.btn:active{transform:scale(.97)}
+.btn.red{background:linear-gradient(180deg,var(--red2),var(--red));border-color:#ff6a6f;box-shadow:0 10px 28px -10px rgba(229,35,44,.7)}
+.btn.grn{background:linear-gradient(180deg,#36e08d,#1fae67);border-color:#4fe89c;color:#05140c;box-shadow:0 10px 28px -10px rgba(39,207,124,.6)}
+.btn.ghost{background:transparent}
+.btn.block{width:100%}
+.btn.sm{min-height:40px;padding:0 14px;font-size:14px;border-radius:12px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12.5px;font-weight:700;background:var(--panel2);color:var(--mut);border:1px solid var(--line2);white-space:nowrap}
+.pill.ok{color:#7ff0b5;background:rgba(39,207,124,.12);border-color:rgba(39,207,124,.35)}
+.pill.warn{color:#ffd27a;background:rgba(255,174,31,.12);border-color:rgba(255,174,31,.38)}
+.pill.bad{color:#ff9a9e;background:rgba(229,35,44,.16);border-color:rgba(229,35,44,.5)}
+.pill.blue{color:#9cc3ff;background:rgba(61,139,255,.14);border-color:rgba(61,139,255,.4)}
+
+/* ---------- garde ---------- */
+.garde{position:relative;overflow:hidden;padding:18px 18px 16px;border-radius:22px;border:1px solid #3a1c21;
+  background:linear-gradient(135deg,#2a0d11 0%,#17090c 55%,#120d10 100%)}
+.garde:before{content:"";position:absolute;inset:auto -40px -60px auto;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(229,35,44,.4),transparent)}
+.garde .lbl{font:700 13px/1 var(--cond);letter-spacing:.14em;color:#ff8f93;text-transform:uppercase}
+.garde .day{font:800 30px/1.05 var(--cond);margin:6px 0 12px}
+.garde .day::first-letter{text-transform:uppercase}
+.garde .prog{height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.garde .prog i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--red),#ff8a3c);transition:width .6s}
+.garde .meta{display:flex;justify-content:space-between;margin-top:9px;font-size:14px;color:#e6c3c5}
+.garde .meta b{color:#fff}
+
+/* ---------- véhicules ---------- */
+.vgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:560px){.vgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.vcard{position:relative;text-align:left;display:flex;flex-direction:column;border-radius:20px;padding:10px 12px 12px;
+  background:linear-gradient(180deg,#1a1f2a,#12151c);border:1px solid var(--line);transition:transform .12s,border-color .2s;overflow:hidden}
+.vcard:active{transform:scale(.97)}
+.vcard .vimg{margin:2px -4px 4px;aspect-ratio:260/120}
+.vcard .vimg svg{width:100%;height:100%}
+.vcard .vn{font:800 21px/1 var(--cond);letter-spacing:.02em}
+.vcard .vp{font-size:12px;color:var(--mut);margin-top:3px;letter-spacing:.04em;min-height:16px}
+.vcard .vs{margin-top:9px}
+.vcard .vk{margin-top:7px;font:700 15px/1 var(--cond);color:#c9cfdb;letter-spacing:.03em}
+.vcard.st-ok{border-color:rgba(39,207,124,.35)}
+.vcard.st-bad{border-color:rgba(229,35,44,.55);background:linear-gradient(180deg,#26131a,#12151c)}
+.vcard .bdg{position:absolute;top:10px;right:10px;min-width:26px;height:26px;padding:0 7px;border-radius:99px;display:grid;place-items:center;
+  font-weight:800;font-size:13px;background:var(--amb);color:#231500}
+.vcard .bdg.bad{background:var(--red);color:#fff}
+
+.cta{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(78px + var(--safe-b));z-index:30;
+  display:flex;align-items:center;gap:10px;height:58px;padding:0 26px;border-radius:99px;font:800 19px/1 var(--cond);letter-spacing:.06em;text-transform:uppercase;
+  background:linear-gradient(180deg,var(--red2),var(--red));box-shadow:0 14px 34px -8px rgba(229,35,44,.75),0 0 0 6px rgba(11,13,17,.9);white-space:nowrap}
+.cta:active{transform:translateX(-50%) scale(.96)}
+
+/* ---------- barre du bas ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(14,16,22,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);padding:8px 8px calc(8px + var(--safe-b))}
+.nav .in{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;color:var(--mut2);padding:4px 0;position:relative}
+.nav button.on{color:var(--txt)}
+.nav button.on .ico{color:var(--red2)}
+.nav .nb{position:absolute;top:0;left:calc(50% + 6px);min-width:17px;height:17px;border-radius:9px;background:var(--red);color:#fff;font-size:10.5px;font-weight:800;display:grid;place-items:center;padding:0 4px}
+
+/* ---------- listes ---------- */
+.list{display:flex;flex-direction:column;gap:8px}
+.li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);text-align:left;width:100%}
+.li:active{background:var(--panel2)}
+.li .lic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--panel2)}
+.li .lt{font-weight:700}
+.li .ls{font-size:13px;color:var(--mut)}
+.li .chev{color:var(--mut2)}
+.li.g-mineur{border-left:4px solid var(--amb)}
+.li.g-majeur{border-left:4px solid #ff7a2f}
+.li.g-indispo{border-left:4px solid var(--red)}
+.empty{text-align:center;padding:34px 16px;color:var(--mut)}
+.empty .big{font:800 22px/1.1 var(--cond);color:var(--txt);margin:10px 0 4px}
+.day-h{font:700 13px/1 var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:18px 4px 8px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:8px 14px;border-radius:99px;background:var(--panel);border:1px solid var(--line);font-weight:600;font-size:14px;color:var(--mut)}
+.chip.on{background:var(--txt);color:#0b0d11;border-color:var(--txt)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px}
+.tabs button{height:40px;border-radius:10px;font-weight:700;color:var(--mut)}
+.tabs button.on{background:var(--panel2);color:var(--txt);box-shadow:0 1px 0 var(--line2) inset}
+
+/* ---------- formulaires ---------- */
+.fld{display:block;margin-bottom:14px}
+.fld>span{display:block;font-size:13px;font-weight:600;color:var(--mut);margin:0 2px 6px}
+.inp{width:100%;min-height:50px;padding:12px 14px;border-radius:14px;background:#0e1117;border:1px solid var(--line2);outline:none;font-size:16px}
+.inp:focus{border-color:var(--red2);box-shadow:0 0 0 3px rgba(229,35,44,.2)}
+textarea.inp{min-height:84px;resize:vertical}
+select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+  background-position:calc(100% - 20px) 22px,calc(100% - 14px) 22px;background-size:6px 6px;background-repeat:no-repeat}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;min-width:70px;min-height:44px;border-radius:12px;background:#0e1117;border:1px solid var(--line2);font-weight:700;font-size:14px;color:var(--mut)}
+.seg button.on{color:#fff;border-color:transparent}
+.seg button.on.g-mineur{background:#7a5200}
+.seg button.on.g-majeur{background:#9a3d0a}
+.seg button.on.g-indispo{background:var(--red)}
+.seg button.on.def{background:var(--txt);color:#0b0d11}
+.check{display:flex;align-items:center;gap:10px;font-weight:600}
+.check input{width:22px;height:22px;accent-color:var(--red)}
+
+/* ---------- assistant de montée ---------- */
+.wz-top{position:sticky;top:0;z-index:20;margin:0 -16px;padding:calc(10px + var(--safe-t)) 16px 12px;background:rgba(11,13,17,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.wz-top .row{gap:12px}
+.wz-top .vmini{width:74px;flex:none}
+.wz-top h2{margin:0;font:800 22px/1 var(--cond)}
+.wz-top .st{font-size:13px;color:var(--mut);margin-top:3px}
+.steps{display:flex;gap:4px;margin-top:12px}
+.steps i{flex:1;height:5px;border-radius:9px;background:var(--line)}
+.steps i.s-done{background:#7d2a30}
+.steps i.s-cur{background:var(--red2)}
+.wz-h{font:800 30px/1.05 var(--cond);margin:22px 2px 4px}
+.wz-sub{color:var(--mut);margin:0 2px 18px}
+.wz-bot{position:fixed;left:0;right:0;bottom:0;z-index:25;padding:12px 16px calc(12px + var(--safe-b));background:linear-gradient(transparent,var(--bg) 30%)}
+.wz-bot .in{max-width:680px;margin:0 auto;display:flex;gap:10px}
+.wz-bot .btn{flex:1;min-height:56px;font-size:17px}
+.wz-bot .btn.back{flex:0 0 56px;padding:0}
+
+.odo{display:flex;align-items:baseline;gap:10px;background:#07090c;border:1px solid var(--line2);border-radius:18px;padding:16px 18px;
+  box-shadow:inset 0 2px 14px rgba(0,0,0,.6)}
+.odo input{flex:1;min-width:0;background:none;border:0;outline:none;font:700 44px/1 var(--cond);letter-spacing:.08em;color:#ffe9b0}
+.odo input::placeholder{color:#3b3424}
+.odo span{font:700 20px/1 var(--cond);color:var(--mut)}
+.odo-h{display:flex;justify-content:space-between;gap:8px;margin:10px 4px 14px;font-size:14px;color:var(--mut)}
+.odo-h b{color:var(--txt)}
+.odo-h .warn{color:var(--amb);font-weight:700}
+.shot{display:flex;gap:12px;align-items:center;margin-top:12px;padding:10px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+.shot img{width:110px;height:44px;object-fit:cover;border-radius:8px;background:#000}
+
+.lvl{padding:14px;border-radius:18px;background:var(--panel);border:1px solid var(--line);margin-bottom:10px}
+.lvl .hd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lvl .hd .nm{flex:1;font-weight:700;font-size:17px}
+.lvl .hd .val{font:800 22px/1 var(--cond)}
+.gauge{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.gauge button{height:46px;border-radius:10px;background:#0e1117;border:1px solid var(--line2);position:relative}
+.gauge button.on{border-color:transparent}
+.gauge button span{position:absolute;bottom:-18px;left:0;right:0;font-size:11px;color:var(--mut2);font-weight:600}
+.lvl .ft{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.tog{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:99px;border:1px solid var(--line2);font-weight:700;font-size:14px;color:var(--mut)}
+.tog.on{background:rgba(39,207,124,.14);border-color:rgba(39,207,124,.45);color:#86f2bb}
+
+.ess{padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px}
+.ess.def{border-color:rgba(229,35,44,.55);background:linear-gradient(180deg,#23131a,var(--panel))}
+.ess .hd{display:flex;align-items:center;gap:12px}
+.ess .nm{font-weight:700}
+.ess .ds{font-size:13px;color:var(--mut)}
+.tri{display:flex;gap:6px;flex:none}
+.tri button{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:#0e1117;border:1px solid var(--line2);color:var(--mut2)}
+.tri button.on.ok{background:var(--grn);border-color:var(--grn);color:#04140b}
+.tri button.on.ko{background:var(--red);border-color:var(--red);color:#fff}
+.tri button.na{width:auto;padding:0 10px;font-size:12px;font-weight:800}
+.tri button.on.na{background:var(--line2);color:var(--txt)}
+.ess .more{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line2)}
+.phs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.phs .ph{position:relative;width:74px;height:74px;border-radius:12px;overflow:hidden;background:#000}
+.phs .ph img{width:100%;height:100%;object-fit:cover}
+.phs .ph button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.7);display:grid;place-items:center}
+.phs .ph button .ico{width:14px;height:14px}
+.phs .add{width:74px;height:74px;border-radius:12px;border:1.5px dashed var(--line2);display:grid;place-items:center;color:var(--mut)}
+
+.armsec{border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px;overflow:hidden}
+.armsec .hd{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;text-align:left}
+.ring{width:40px;height:40px;flex:none}
+.armsec .nm{font-weight:700}
+.armsec .ds{font-size:13px;color:var(--mut)}
+.armsec .body{border-top:1px solid var(--line);padding:6px 10px 12px}
+.it{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #1d222d}
+.it:last-child{border-bottom:0}
+.it .q{flex:none;width:34px;height:28px;border-radius:8px;display:grid;place-items:center;background:#0e1117;font:800 15px/1 var(--cond);color:#cfd5e1}
+.it .l{flex:1;min-width:0;font-size:15px;font-weight:600}
+.it .l small{display:block;font-weight:400;color:var(--mut);font-size:12.5px;line-height:1.3}
+.it .tri button{width:40px;height:40px;border-radius:11px}
+.it.ko .q{background:var(--red);color:#fff}
+.it-note{margin:2px 0 6px 44px}
+
+.sou{padding:14px;border-radius:18px;background:var(--panel);border:1px solid var(--line);margin-bottom:10px}
+.qchips{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}
+.qchips button{padding:6px 10px;border-radius:99px;border:1px solid var(--line2);font-size:13px;color:var(--mut);font-weight:600}
+
+.rec{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.rec:last-child{border-bottom:0}
+.rec .k{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--panel2)}
+.rec .t{font-weight:700}
+.rec .d{font-size:14px;color:var(--mut)}
+.rec .d b{color:var(--txt)}
+
+.done{text-align:center;padding:40px 10px 20px}
+.done .ok{width:120px;height:120px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#36e08d,#16904f);box-shadow:0 0 0 12px rgba(39,207,124,.12),0 0 60px rgba(39,207,124,.45);animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.done .ok .ico{width:60px;height:60px;color:#04140b;stroke-width:3}
+.done h2{font:800 40px/1 var(--cond);margin:0 0 8px;text-transform:uppercase;letter-spacing:.03em}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+
+/* ---------- connexion ---------- */
+.splash{min-height:calc(100vh - 40px);display:flex;flex-direction:column;justify-content:center;padding:30px 0}
+.splash .emb{width:110px;height:110px;margin:0 auto 18px;filter:drop-shadow(0 16px 30px rgba(229,35,44,.45))}
+.splash h1{text-align:center;font:800 40px/.95 var(--cond);text-transform:uppercase;letter-spacing:.03em;margin:0}
+.splash .sub{text-align:center;color:var(--mut);margin:10px 0 28px}
+.splash .sub b{color:#ff9a9e;font-weight:700}
+
+/* ---------- feuille / modale ---------- */
+.sheet-bg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);animation:fade .2s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-height:92vh;overflow:auto;background:var(--bg2);border-top:1px solid var(--line2);
+  border-radius:24px 24px 0 0;padding:10px 16px calc(20px + var(--safe-b));animation:up .25s cubic-bezier(.2,.9,.3,1)}
+.sheet .in{max-width:680px;margin:0 auto}
+.sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line2);margin:0 auto 12px}
+.sheet h3{font:800 26px/1.05 var(--cond);margin:4px 0 6px}
+@keyframes up{from{transform:translateY(100%)}}
+@keyframes fade{from{opacity:0}}
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:#000}
+.zoom{position:fixed;inset:0;z-index:80;background:#000;display:grid;place-items:center}
+.zoom img{max-width:100%;max-height:100%}
+
+.toast{position:fixed;left:50%;top:calc(14px + var(--safe-t));transform:translateX(-50%);z-index:90;background:#fff;color:#0b0d11;font-weight:700;
+  padding:12px 18px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.45);max-width:calc(100% - 32px);animation:drop .3s}
+.toast.bad{background:var(--red);color:#fff}
+@keyframes drop{from{transform:translate(-50%,-30px);opacity:0}}
+
+/* ---------- lecture du compteur ---------- */
+.scan{position:fixed;inset:0;z-index:70;background:#000;color:#fff}
+.scan video,.scan canvas.full{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scan .mask{position:absolute;inset:0;pointer-events:none}
+.scan .frame{position:absolute;left:7%;right:7%;top:36%;height:17%;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.6)}
+.scan .frame:before,.scan .frame:after{content:"";position:absolute;inset:-3px;border-radius:18px;border:3px solid transparent;
+  border-top-color:var(--red2);border-bottom-color:var(--red2);clip-path:polygon(0 0,18% 0,18% 100%,0 100%,0 0,82% 0,100% 0,100% 100%,82% 100%,82% 0)}
+.scan .frame:after{border-color:transparent;border-left-color:var(--red2);border-right-color:var(--red2);clip-path:polygon(0 0,100% 0,100% 30%,0 30%,0 70%,100% 70%,100% 100%,0 100%)}
+.scan .frame.sq{left:50%;top:30%;width:min(72vw,320px);height:min(72vw,320px);margin-left:calc(min(72vw,320px) / -2)}
+.scan .laser{position:absolute;left:4%;right:4%;height:2px;top:50%;background:linear-gradient(90deg,transparent,var(--red2),transparent);animation:las 1.6s ease-in-out infinite alternate;opacity:.85}
+@keyframes las{from{top:12%}to{top:88%}}
+.scan .tip{position:absolute;left:16px;right:16px;top:calc(22% - 30px);text-align:center;font:700 22px/1.15 var(--cond);text-shadow:0 2px 8px #000}
+.scan .tip small{display:block;font:500 14px/1.3 'Barlow',sans-serif;color:#cfd3dc;margin-top:6px}
+.scan .bar{position:absolute;left:0;right:0;bottom:0;padding:20px 24px calc(28px + var(--safe-b));display:flex;align-items:center;justify-content:space-between}
+.scan .rb{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;backdrop-filter:blur(6px)}
+.scan .rb.on{background:#ffd24a;color:#000}
+.scan .shoot{width:82px;height:82px;border-radius:50%;border:5px solid #fff;display:grid;place-items:center}
+.scan .shoot i{width:64px;height:64px;border-radius:50%;background:var(--red2)}
+.scan .res{position:absolute;inset:auto 0 0 0;background:var(--bg2);border-radius:24px 24px 0 0;padding:18px 16px calc(20px + var(--safe-b));animation:up .25s}
+.scan .res .in{max-width:680px;margin:0 auto}
+.scan .res img{width:100%;max-height:110px;object-fit:contain;border-radius:12px;background:#000;margin-bottom:12px}
+.scan .busy{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);font:700 20px var(--cond);letter-spacing:.05em}
+.spinner{width:42px;height:42px;border-radius:50%;border:4px solid rgba(255,255,255,.2);border-top-color:var(--red2);animation:rot .8s linear infinite;margin:0 auto 12px}
+
+.kmchart{width:100%;height:120px}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.kv div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.kv b{display:block;font:800 22px/1 var(--cond)}
+.kv span{font-size:12px;color:var(--mut)}
+.hero{position:relative;margin:4px -16px 0;padding:6px 16px 0}
+.hero svg{width:100%;max-width:520px;margin:0 auto}
+.hero h2{font:800 40px/1 var(--cond);margin:4px 0 2px}
+.qr{background:#fff;border-radius:16px;padding:14px;width:min(260px,100%);margin:12px auto}
+.qr svg{width:100%;height:auto}
+code.tok{display:block;word-break:break-all;font-size:12px;background:#0e1117;border:1px solid var(--line2);padding:10px;border-radius:10px;color:var(--mut)}
+.qrbtn{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:14px 16px;border-radius:18px;background:var(--panel);border:1px solid var(--line);text-align:left}
+.qrbtn .qi{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:#f7d84a;color:#1a1400;flex:none}
+.qrbtn b{display:block}
+.hyg{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;margin-bottom:12px;border:1px solid var(--line);background:var(--panel)}
+.hyg.on{border-color:rgba(39,207,124,.5);background:linear-gradient(180deg,rgba(39,207,124,.12),var(--panel))}
+.vedit{padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4b52"/><stop offset=".55" stop-color="#d8161f"/><stop offset="1" stop-color="#930b12"/></linearGradient>
+    <linearGradient id="gRedS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".25"/><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".08"/></linearGradient>
+    <linearGradient id="gGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9fc6ff" stop-opacity=".55"/><stop offset=".5" stop-color="#22324a"/><stop offset="1" stop-color="#121b29"/></linearGradient>
+    <linearGradient id="gTank" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f4f7"/><stop offset=".5" stop-color="#c6cbd4"/><stop offset="1" stop-color="#7c8390"/></linearGradient>
+    <linearGradient id="gGrey" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#59606e"/><stop offset="1" stop-color="#2b3039"/></linearGradient>
+    <radialGradient id="gWheel"><stop offset=".45" stop-color="#b8bfcc"/><stop offset=".55" stop-color="#3a3f49"/><stop offset=".62" stop-color="#121418"/></radialGradient>
+    <linearGradient id="gFlame" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff2d36"/><stop offset=".6" stop-color="#ff7a1f"/><stop offset="1" stop-color="#ffd04a"/></linearGradient>
+  </defs>
+</svg>
+<div id="app"></div>
+<div id="layer"></div>
+
+<script src="fat.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   MONTÉE EN VÉHICULE — CS Cruzy / Quarante
+   Données : un dépôt GitHub privé (contrôles, défauts, photos en fichiers)
+   ===================================================================== */
+
+/* ---------- petits outils ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const p2 = n => String(n).padStart(2, '0');
+const slug = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'anonyme';
+const unslug = s => String(s || '').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+const norm = s => slug(s).replace(/-/g, '');
+const stamp = d => d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds());
+const fromStamp = s => new Date(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8), +s.slice(9, 11), +s.slice(11, 13), +s.slice(13, 15));
+const nf = n => (n === null || n === undefined || n === '' || isNaN(n)) ? '—' : Number(n).toLocaleString('fr-FR');
+const fTime = d => p2(d.getHours()) + ':' + p2(d.getMinutes());
+const fDate = d => p2(d.getDate()) + '/' + p2(d.getMonth() + 1);
+const fDay = d => d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+const sameDay = (a, b) => a.toDateString() === b.toDateString();
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const b64utf8 = s => { const b = new TextEncoder().encode(s); let bin = ''; for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(bin); };
+const utf8b64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
+const b64url = s => b64utf8(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64url = s => utf8b64(s.replace(/-/g, '+').replace(/_/g, '/'));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const loadScript = src => new Promise((ok, ko) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
+async function sha256(t) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+
+/* ---------- icônes ---------- */
+const IC = {
+  home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
+  alert: '<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  hist: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  cam: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  scan: '<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/>',
+  check: '<path d="M20 6L9 17l-5-5"/>',
+  x: '<path d="M18 6L6 18M6 6l12 12"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  chev: '<path d="M9 18l6-6-6-6"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>',
+  user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  flash: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+  gauge: '<path d="M12 14l4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/>',
+  box: '<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/>',
+  tool: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9l-3.8 3.8z"/>',
+  photo: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+  dl: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/>',
+  sync: '<path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/>',
+  trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+  key: '<path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+  drop: '<path d="M12 2.7l5.7 5.6a8 8 0 1 1-11.3 0z"/>',
+  fuel: '<path d="M3 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18M3 22h12M6 7h6"/><path d="M15 9h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3"/>',
+  note: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  truck: '<path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+  wifi: '<path d="M1 1l22 22M16.7 11.1A11 11 0 0 1 19 12.6M5 12.6a11 11 0 0 1 5.2-2.5M10.7 5A16 16 0 0 1 22.6 9M1.4 9a16 16 0 0 1 4.4-2.8M8.5 16.1a5 5 0 0 1 7 0M12 20h.01"/>',
+  qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/>',
+  print: '<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>'
+};
+const ico = (n, cls = '') => `<svg class="ico ${cls}" viewBox="0 0 24 24">${IC[n] || ''}</svg>`;
+
+const EMBLEM = `<svg class="emb" viewBox="0 0 100 100">
+  <path d="M50 4 88 18v30c0 24-16 40-38 48C28 88 12 72 12 48V18z" fill="#1a0b0e" stroke="url(#gRed)" stroke-width="5"/>
+  <path d="M50 22c4 10 16 16 16 32a16 16 0 0 1-32 0c0-8 4-12 8-16 0 6 3 9 6 9-4-9 0-17 2-25z" fill="url(#gFlame)"/>
+  <path d="M50 52c2 4 7 6 7 12a7 7 0 0 1-14 0c0-4 3-6 4-8 1 3 2 4 3 4-1-3-1-5 0-8z" fill="#fff3c4"/>
+</svg>`;
+
+/* ---------- silhouettes des engins ---------- */
+function wheel(x, y, r) { return `<circle cx="${x}" cy="${y}" r="${r}" fill="#0c0d10"/><circle cx="${x}" cy="${y}" r="${r * .82}" fill="url(#gWheel)"/><circle cx="${x}" cy="${y}" r="${r * .22}" fill="#2b2f37"/>`; }
+function lights(x, y, w) { return `<rect x="${x}" y="${y}" width="${w}" height="6" rx="2.5" fill="#1a2f5c"/><rect x="${x + 2}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#4d9bff"/><rect x="${x + w / 2 + 1}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#4d9bff" opacity=".55"/>`; }
+function vehSvg(type) {
+  const sh = '<ellipse cx="130" cy="110" rx="116" ry="6" fill="#000" opacity=".45"/>';
+  const truckCab = (x, top) => `
+    <path d="M${x} ${top + 6}q0-6 6-6h34q8 0 12 8l12 24q2 4 2 9v29q0 4-4 4h-62z" fill="url(#gRed)"/>
+    <path d="M${x + 6} ${top + 8}h30q5 0 8 6l9 18h-47z" fill="url(#gGlass)"/>
+    <path d="M${x + 4} ${top + 46}h64" stroke="#fff" stroke-width="5"/>
+    <rect x="${x + 58}" y="${top + 56}" width="10" height="5" rx="1.5" fill="#ffe7a1"/>
+    ${lights(x + 6, top - 6, 30)}`;
+  const stripe = (x1, x2, y) => `<rect x="${x1}" y="${y}" width="${x2 - x1}" height="5" fill="#fff" opacity=".95"/><rect x="${x1}" y="${y + 7}" width="${x2 - x1}" height="2" fill="#ffd400" opacity=".9"/>`;
+  const shutters = (x, y, w, h, n) => { let s = ''; for (let i = 0; i < n; i++) { const xx = x + i * (w / n); s += `<rect x="${xx + 2}" y="${y}" width="${w / n - 4}" height="${h}" rx="3" fill="#000" opacity=".16"/>`; for (let k = 6; k < h; k += 6) s += `<path d="M${xx + 4} ${y + k}h${w / n - 8}" stroke="#000" stroke-opacity=".18" stroke-width="1"/>`; } return s; };
+  let body = '';
+  switch (type) {
+    case 'VSAV':
+      body = `
+        <rect x="18" y="20" width="160" height="76" rx="8" fill="url(#gRed)"/>
+        <rect x="18" y="20" width="160" height="76" rx="8" fill="url(#gRedS)"/>
+        <path d="M176 34h22q10 0 16 10l14 22q3 5 3 11v15q0 4-4 4h-51z" fill="url(#gRed)"/>
+        <path d="M182 40h16q7 0 11 7l10 16h-37z" fill="url(#gGlass)"/>
+        <rect x="30" y="30" width="48" height="26" rx="4" fill="url(#gGlass)" opacity=".85"/>
+        <g transform="translate(118 44)"><rect x="-4" y="-14" width="8" height="28" rx="1.5" fill="#fff"/><rect x="-14" y="-4" width="28" height="8" rx="1.5" fill="#fff"/></g>
+        ${stripe(18, 230, 70)}
+        ${lights(24, 14, 34)}${lights(182, 28, 24)}
+        <rect x="222" y="82" width="9" height="5" rx="1.5" fill="#ffe7a1"/>
+        ${wheel(58, 98, 13)}${wheel(196, 98, 13)}`;
+      break;
+    case 'VSRTU':
+      body = `
+        <rect x="18" y="26" width="158" height="70" rx="7" fill="url(#gRed)"/>
+        <rect x="18" y="26" width="158" height="70" rx="7" fill="url(#gRedS)"/>
+        ${shutters(24, 32, 146, 34, 3)}
+        <rect x="16" y="14" width="164" height="5" rx="2" fill="#c9ced8"/><path d="M24 19v7M60 19v7M100 19v7M140 19v7M172 19v7" stroke="#c9ced8" stroke-width="3"/>
+        ${truckCab(176, 28)}
+        <path d="M18 72h20l-10 24h-10zM46 72h16l-10 24h-16z" fill="#ffd400" opacity=".9"/>
+        ${stripe(62, 176, 72)}
+        ${wheel(56, 98, 13)}${wheel(206, 98, 13)}`;
+      break;
+    case 'CCF': case 'CCFHP': case 'CCFU':
+      body = `
+        <rect x="36" y="30" width="138" height="64" rx="6" fill="url(#gRed)"/>
+        <rect x="36" y="30" width="138" height="64" rx="6" fill="url(#gRedS)"/>
+        ${shutters(42, 36, 126, 32, 3)}
+        <path d="M30 94V22h150" fill="none" stroke="#c9ced8" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M176 36h26q8 0 12 8l12 22q2 4 2 8v20h-52z" fill="url(#gRed)"/>
+        <path d="M182 42h18q5 0 8 6l9 16h-35z" fill="url(#gGlass)"/>
+        <path d="M178 30h30l22 40" fill="none" stroke="#c9ced8" stroke-width="4" stroke-linejoin="round"/>
+        ${lights(184, 22, 26)}
+        <rect x="218" y="80" width="9" height="5" rx="1.5" fill="#ffe7a1"/>
+        ${stripe(36, 228, 74)}
+        ${type === 'CCFU' ? '<rect x="44" y="20" width="120" height="4" rx="2" fill="#c9ced8"/>' : ''}
+        ${wheel(70, 96, 16)}${wheel(200, 96, 16)}`;
+      break;
+    case 'CCGC':
+      body = `
+        <rect x="16" y="84" width="166" height="8" fill="#2a2e36"/>
+        <rect x="18" y="28" width="158" height="58" rx="26" fill="url(#gTank)"/>
+        <rect x="18" y="50" width="158" height="9" fill="url(#gRed)"/>
+        <path d="M40 28v58M90 28v58M140 28v58" stroke="#000" stroke-opacity=".12" stroke-width="2"/>
+        <rect x="70" y="20" width="36" height="9" rx="3" fill="#9aa1ad"/>
+        ${truckCab(176, 26)}
+        ${wheel(46, 98, 13)}${wheel(80, 98, 13)}${wheel(206, 98, 13)}`;
+      break;
+    case 'GE':
+      body = `
+        <path d="M30 92h-18" stroke="#9aa1ad" stroke-width="4" stroke-linecap="round"/>
+        <rect x="30" y="84" width="190" height="8" rx="2" fill="#2a2e36"/>
+        <rect x="40" y="26" width="168" height="60" rx="10" fill="url(#gRed)"/>
+        <rect x="40" y="26" width="168" height="60" rx="10" fill="url(#gRedS)"/>
+        <rect x="52" y="36" width="70" height="40" rx="5" fill="#000" opacity=".25"/>
+        ${[0, 1, 2, 3, 4, 5].map(i => `<rect x="58" y="${40 + i * 6}" width="58" height="3" rx="1.5" fill="#000" opacity=".45"/>`).join('')}
+        <rect x="134" y="36" width="62" height="24" rx="4" fill="#1a1d24"/>
+        <circle cx="146" cy="48" r="5" fill="#27cf7c"/><circle cx="162" cy="48" r="5" fill="#ffae1f"/><rect x="172" y="43" width="18" height="10" rx="2" fill="#3a3f49"/>
+        <rect x="134" y="66" width="62" height="5" fill="#fff" opacity=".9"/>
+        <path d="M66 26v-8h28v8" fill="none" stroke="#c9ced8" stroke-width="4"/>
+        ${wheel(124, 98, 13)}`;
+      break;
+    case 'FMOGP':
+    case 'FPT':
+    default:
+      body = `
+        <rect x="16" y="26" width="160" height="70" rx="7" fill="url(#gRed)"/>
+        <rect x="16" y="26" width="160" height="70" rx="7" fill="url(#gRedS)"/>
+        ${shutters(22, 32, 148, 36, 4)}
+        ${type === 'FMOGP' ? '<rect x="40" y="14" width="40" height="12" rx="3" fill="#c9ced8"/><path d="M80 18h40" stroke="#c9ced8" stroke-width="5" stroke-linecap="round"/>' :
+          '<rect x="12" y="13" width="170" height="5" rx="2" fill="#d9dde4"/><rect x="12" y="20" width="170" height="3" rx="1.5" fill="#9aa1ad"/>' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => `<path d="M${18 + i * 15.5} 13v10" stroke="#9aa1ad" stroke-width="2"/>`).join('')}
+        ${truckCab(176, 28)}
+        ${stripe(16, 176, 74)}
+        ${wheel(54, 98, 13)}${wheel(206, 98, 13)}`;
+  }
+  return `<svg viewBox="0 0 260 120">${sh}${body}</svg>`;
+}
+
+/* ---------- référentiels ---------- */
+const NIVEAUX = {
+  gasoil: { l: 'Gasoil', i: 'fuel', c: '#ffae1f' },
+  eau: { l: 'Eau (tonne)', i: 'drop', c: '#3d8bff' },
+  adblue: { l: 'AdBlue', i: 'drop', c: '#4fd1ff' },
+  additif: { l: 'Additif / émulseur', i: 'drop', c: '#b88cff' },
+  carburant: { l: 'Carburant', i: 'fuel', c: '#ffae1f' }
+};
+const TYPES = { VSAV: 'VSAV', FPT: 'FPT / FPTGP', VSRTU: 'VSRTU', CCF: 'CCF (CCFM-BP)', CCFHP: 'CCF (CCFM-HP)', CCFU: 'CCFU', CCGC: 'CCGC', FMOGP: 'FMOGP', GE: 'Groupe électrogène' };
+const GRAV = { mineur: 'Mineur', majeur: 'Majeur', indispo: 'Indisponible' };
+const GRAV_TXT = { mineur: 'À signaler, l’engin reste opérationnel', majeur: 'À réparer rapidement', indispo: 'L’engin ne peut pas partir' };
+const QUICK = ['Choc / rayure carrosserie', 'Voyant allumé', 'Matériel manquant', 'Matériel endommagé', 'Fuite', 'Pneumatique', 'Éclairage / gyro', 'Radio / transmissions', 'Propreté / désinfection', 'Batterie / charge'];
+const DEFAULT_CONF = {
+  centre: 'CS Cruzy / Quarante',
+  releve: 7,
+  pin: '',
+  pompiers: [],
+  personnage: '',
+  // anciens QR codes des pochettes (formulaires Google) -> engin
+  qrAnciens: { 'form:1FAIpQLSeyXf4tlHUfDYg0QXy850l0xZcr-5cPmmrMIkAT852k-JoZAQ': 'vsav-215' },
+  vehicules: [
+    { id: 'vsav-215', nom: 'VSAV 215', type: 'VSAV', plaque: 'FP-396-NC', niveaux: ['gasoil', 'adblue'], compteur: 'km', heures: false, actif: true },
+    { id: 'fpt-040', nom: 'FPTGP 040', type: 'FPT', plaque: '', niveaux: ['gasoil', 'eau', 'adblue'], compteur: 'km', heures: true, actif: true },
+    { id: 'vsrtu-070', nom: 'VSRTU 070', type: 'VSRTU', plaque: 'DG-414-RZ', niveaux: ['gasoil', 'adblue'], compteur: 'km', heures: false, actif: true },
+    { id: 'ccf-825', nom: 'CCF 825', type: 'CCFHP', plaque: '', niveaux: ['gasoil', 'eau', 'adblue', 'additif'], compteur: 'km', heures: true, actif: true },
+    { id: 'ccf-053', nom: 'CCF 053', type: 'CCF', plaque: '', niveaux: ['gasoil', 'eau', 'additif'], compteur: 'km', heures: true, actif: true },
+    { id: 'ccgc-150', nom: 'CCGC 150', type: 'CCGC', plaque: '', niveaux: ['gasoil', 'eau'], compteur: 'km', heures: true, actif: true },
+    { id: 'groupe-electrogene', nom: 'Groupe électrogène', type: 'GE', plaque: '', niveaux: ['carburant'], compteur: 'h', heures: false, actif: true }
+  ]
+};
+
+/* ---------- état ---------- */
+const S = {
+  cfg: LS.get('mv.cfg', null),           // { o, r, t, b } ou { demo:true }
+  user: LS.get('mv.user', null),         // { nom, equipe }
+  conf: LS.get('mv.conf', DEFAULT_CONF),
+  tree: LS.get('mv.tree', []),           // [{ p, s }]
+  files: LS.get('mv.files', {}),         // chemin -> { s, j }
+  outbox: LS.get('mv.outbox', []),
+  view: 'home', arg: null, prevView: null,
+  online: true, syncing: false, flushing: false,
+  filt: 'all', anoTab: 'open', admin: false
+};
+let W = LS.get('mv.draft', null);        // montée en cours
+let IDX = { ctrls: [], open: [], res: [], hyg: [] };
+
+const RX_CTRL = /^controles\/\d{4}\/\d{2}\/(\d{8}-\d{6})_([a-z0-9-]+)_(ok|def|indispo)_(\d+|x)_([a-z0-9-]+)\.json$/;
+const RX_HYG = /^hygiene\/([a-z0-9-]+)_(\d{8}-\d{6})\.json$/;
+const RX_ANO = /^anomalies\/(ouvertes|resolues)\/(([a-z0-9-]+)_(\d{8}-\d{6})_(\d+)_(mineur|majeur|indispo))\.json$/;
+function reindex() {
+  const c = [], o = [], r = [], hy = [];
+  for (const { p } of S.tree) {
+    const mh = p.match(RX_HYG);
+    if (mh) { hy.push({ p, vid: mh[1], date: fromStamp(mh[2]) }); continue; }
+    let m = p.match(RX_CTRL);
+    if (m) { c.push({ p, date: fromStamp(m[1]), vid: m[2], st: m[3], cpt: m[4] === 'x' ? null : +m[4], auteur: unslug(m[5]) }); continue; }
+    m = p.match(RX_ANO);
+    if (m) (m[1] === 'ouvertes' ? o : r).push({ p, name: m[2], vid: m[3], date: fromStamp(m[4]), grav: m[6] });
+  }
+  const d = (a, b) => b.date - a.date;
+  IDX = { ctrls: c.sort(d), open: o.sort(d), res: r.sort(d), hyg: hy.sort(d) };
+}
+reindex();
+const vehs = (all) => (S.conf.vehicules || []).filter(v => all || v.actif !== false);
+const veh = id => (S.conf.vehicules || []).find(v => v.id === id) || { id, nom: unslug(id), type: 'FPT', niveaux: [], compteur: 'km' };
+const ctrlsOf = vid => IDX.ctrls.filter(c => c.vid === vid);
+const openOf = vid => IDX.open.filter(a => a.vid === vid);
+function gardeStart(now = new Date()) {
+  const h = +S.conf.releve || 7, d = new Date(now); d.setHours(h, 0, 0, 0);
+  if (now < d) d.setDate(d.getDate() - 1);
+  return d;
+}
+function vState(v) {
+  const cs = ctrlsOf(v.id), last = cs[0], anos = openOf(v.id);
+  return { last, anos, indispo: anos.some(a => a.grav === 'indispo'), monte: !!(last && last.date >= gardeStart()) };
+}
+
+/* =====================================================================
+   STOCKAGE : GitHub (dépôt privé) ou démo locale
+   ===================================================================== */
+const encPath = p => p.split('/').map(encodeURIComponent).join('/');
+const GH = {
+  base() { return `https://api.github.com/repos/${S.cfg.o}/${S.cfg.r}`; },
+  async api(path, opt = {}) {
+    const headers = { Authorization: 'Bearer ' + S.cfg.t, Accept: opt.accept || 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+    if (opt.body) headers['Content-Type'] = 'application/json';
+    return fetch(this.base() + path, { method: opt.method || 'GET', headers, body: opt.body, cache: 'no-store' });
+  },
+  async list() {
+    const r = await this.api(`/git/trees/${encodeURIComponent(S.cfg.b || 'main')}?recursive=1`);
+    if (r.status === 404 || r.status === 409) return [];
+    if (!r.ok) throw new Error('Lecture impossible (' + r.status + ')');
+    const j = await r.json();
+    return j.tree.filter(x => x.type === 'blob').map(x => ({ p: x.path, s: x.sha }));
+  },
+  async getMeta(p) {
+    const r = await this.api(`/contents/${encPath(p)}?ref=${encodeURIComponent(S.cfg.b || 'main')}`);
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error('Lecture ' + r.status);
+    const j = await r.json();
+    let txt;
+    if (j.content) txt = utf8b64(j.content);
+    else { const rr = await this.api(`/git/blobs/${j.sha}`); txt = utf8b64((await rr.json()).content); }
+    return { j: JSON.parse(txt), s: j.sha };
+  },
+  async put(p, b64, msg, sha) {
+    for (let k = 0; k < 4; k++) {
+      const r = await this.api(`/contents/${encPath(p)}`, { method: 'PUT', body: JSON.stringify({ message: msg, content: b64, branch: S.cfg.b || 'main', ...(sha ? { sha } : {}) }) });
+      if (r.ok) { const j = await r.json(); return j.content && j.content.sha; }
+      if (r.status === 422 && !sha) return 'deja';            // fichier déjà envoyé (nouvel essai)
+      if (r.status === 401 || r.status === 403) throw new Error('Accès refusé par GitHub (' + r.status + '). Le jeton est peut-être expiré.');
+      if (r.status !== 409 && r.status < 500) throw new Error('Envoi refusé (' + r.status + ')');
+      await sleep(600 * (k + 1) + Math.random() * 500);
+    }
+    throw new Error('GitHub ne répond pas, nouvel essai plus tard');
+  },
+  putJSON(p, obj, msg, sha) { return this.put(p, b64utf8(JSON.stringify(obj, null, 1)), msg, sha); },
+  putImage(p, dataUrl, msg) { return this.put(p, dataUrl.split(',')[1], msg); },
+  async del(p, sha, msg) {
+    for (let k = 0; k < 4; k++) {
+      const r = await this.api(`/contents/${encPath(p)}`, { method: 'DELETE', body: JSON.stringify({ message: msg, sha, branch: S.cfg.b || 'main' }) });
+      if (r.ok || r.status === 404) return;
+      if (r.status !== 409 && r.status < 500) throw new Error('Suppression refusée (' + r.status + ')');
+      await sleep(600 * (k + 1));
+    }
+  },
+  async imageUrl(p) {
+    const r = await this.api(`/contents/${encPath(p)}?ref=${encodeURIComponent(S.cfg.b || 'main')}`, { accept: 'application/vnd.github.raw+json' });
+    if (!r.ok) throw new Error('photo');
+    return URL.createObjectURL(await r.blob());
+  },
+  async test() {
+    const r = await fetch(`https://api.github.com/repos/${S.cfg.o}/${S.cfg.r}`, { headers: { Authorization: 'Bearer ' + S.cfg.t, Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+    if (r.status === 404) throw new Error('Dépôt introuvable ou jeton sans accès à ce dépôt');
+    if (r.status === 401) throw new Error('Jeton invalide ou expiré');
+    if (!r.ok) throw new Error('Erreur GitHub ' + r.status);
+    const j = await r.json();
+    if (j.permissions && !j.permissions.push) throw new Error('Le jeton n’a pas le droit d’écrire dans ce dépôt');
+    return j.default_branch || 'main';
+  }
+};
+const DEMO = {
+  db() { return LS.get('mv.demo', {}); },
+  save(d) { if (!LS.set('mv.demo', d)) throw new Error('Mémoire du téléphone pleine (mode démo)'); },
+  async list() { const d = this.db(); return Object.keys(d).map(p => ({ p, s: d[p].s })); },
+  async getMeta(p) { const d = this.db()[p]; return d ? { j: JSON.parse(d.c), s: d.s } : null; },
+  async putJSON(p, obj, msg, sha) { const d = this.db(); if (d[p] && !sha) return 'deja'; const s = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); d[p] = { c: JSON.stringify(obj), s }; this.save(d); return s; },
+  async putImage(p, dataUrl) { const d = this.db(); d[p] = { c: JSON.stringify(dataUrl), s: 'img' }; this.save(d); return 'img'; },
+  async del(p) { const d = this.db(); delete d[p]; this.save(d); },
+  async imageUrl(p) { const d = this.db()[p]; if (!d) throw new Error('photo'); return JSON.parse(d.c); },
+  async test() { return 'main'; }
+};
+const Store = () => (S.cfg && S.cfg.demo) ? DEMO : GH;
+
+function treeAdd(p, s) { S.tree = S.tree.filter(x => x.p !== p); S.tree.push({ p, s: s || 'local' }); LS.set('mv.tree', S.tree); reindex(); }
+function treeDel(p) { S.tree = S.tree.filter(x => x.p !== p); LS.set('mv.tree', S.tree); reindex(); }
+function cachePut(p, s, j) {
+  S.files[p] = { s, j, t: Date.now() };
+  const keys = Object.keys(S.files);
+  if (keys.length > 400) keys.sort((a, b) => S.files[a].t - S.files[b].t).slice(0, 100).forEach(k => delete S.files[k]);
+  if (!LS.set('mv.files', S.files)) { S.files = {}; LS.set('mv.files', {}); }
+}
+async function readJSON(p) {
+  const t = S.tree.find(x => x.p === p), c = S.files[p];
+  if (c && (!t || c.s === t.s || t.s === 'local')) return c.j;
+  const m = await Store().getMeta(p);
+  if (!m) return c ? c.j : null;
+  cachePut(p, m.s, m.j);
+  return m.j;
+}
+const imgCache = {};
+async function imageUrl(p) { if (!imgCache[p]) imgCache[p] = Store().imageUrl(p); return imgCache[p]; }
+
+/* ---------- synchronisation ---------- */
+async function sync(quiet) {
+  if (!S.cfg || S.syncing) return;
+  S.syncing = true; paintSync();
+  try {
+    S.tree = await Store().list();
+    // les envois encore en attente restent visibles
+    for (const it of S.outbox) { if (it.path) treeAddSilent(it.path); for (const a of it.anos || []) treeAddSilent(a.path); }
+    LS.set('mv.tree', S.tree); reindex();
+    S.online = true;
+    const cf = S.tree.find(x => x.p === 'config.json');
+    if (cf && (!S.confSha || S.confSha !== cf.s)) {
+      const j = await readJSON('config.json');
+      if (j) { S.conf = Object.assign({}, DEFAULT_CONF, j); S.confSha = cf.s; LS.set('mv.conf', S.conf); }
+    } else if (!cf) S.confSha = null;
+    await Promise.all(IDX.open.map(a => readJSON(a.p).catch(() => null)));
+  } catch (e) {
+    S.online = false;
+    if (!quiet) toast(navigator.onLine ? e.message : 'Hors ligne : données gardées sur le téléphone', true);
+  }
+  S.syncing = false;
+  render();
+  flush();
+}
+function treeAddSilent(p) { if (!S.tree.some(x => x.p === p)) S.tree.push({ p, s: 'local' }); }
+
+async function flush() {
+  if (!S.cfg || S.flushing || !S.outbox.length) return;
+  S.flushing = true; paintSync();
+  const st = Store();
+  try {
+    while (S.outbox.length) {
+      const it = S.outbox[0];
+      for (const ph of it.photos || []) if (!ph.done) { await st.putImage(ph.path, ph.data, 'Photo ' + ph.path.split('/').pop()); ph.done = true; ph.data = null; LS.set('mv.outbox', S.outbox); }
+      for (const a of it.anos || []) if (!a.done) { const s = await st.putJSON(a.path, a.obj, `Défaut ${a.obj.vehicule.nom} : ${a.obj.titre}`); a.done = true; cachePut(a.path, s, a.obj); treeAdd(a.path, s); LS.set('mv.outbox', S.outbox); }
+      for (const x of it.extra || []) if (!x.done) { const s = await st.putJSON(x.path, x.obj, x.msg || 'Montée en véhicule'); x.done = true; treeAdd(x.path, s); LS.set('mv.outbox', S.outbox); }
+      for (const r of it.resolve || []) if (!r.done) { await resolveNow(r.name, r.res); r.done = true; LS.set('mv.outbox', S.outbox); }
+      if (it.path && !it.ok) { const s = await st.putJSON(it.path, it.ctrl, `Montée ${it.ctrl.vehicule.nom} — ${it.ctrl.auteur.nom}`); it.ok = true; cachePut(it.path, s, it.ctrl); treeAdd(it.path, s); }
+      S.outbox.shift(); LS.set('mv.outbox', S.outbox);
+    }
+    S.online = true;
+  } catch (e) {
+    S.online = false;
+    console.warn(e);
+    if (navigator.onLine && /refus|Accès/.test(e.message)) toast(e.message, true);
+  }
+  S.flushing = false; paintSync();
+  if (S.view === 'home' || S.view === 'reglages') render();
+}
+async function resolveNow(name, res) {
+  const st = Store(), from = `anomalies/ouvertes/${name}.json`, to = `anomalies/resolues/${name}.json`;
+  const m = await st.getMeta(from);
+  if (!m) { treeDel(from); return; }                 // déjà réglé par quelqu'un d'autre
+  const obj = Object.assign({}, m.j, { statut: 'resolu', resolution: res });
+  const s = await st.putJSON(to, obj, `Réglé ${obj.vehicule.nom} : ${obj.titre}`);
+  await st.del(from, m.s, `Réglé ${obj.vehicule.nom} : ${obj.titre}`);
+  cachePut(to, s, obj); treeDel(from); treeAdd(to, s);
+}
+function queue(item) { S.outbox.push(item); if (!LS.set('mv.outbox', S.outbox)) { // photos trop lourdes : on les retire de la file
+    item.photos = []; LS.set('mv.outbox', S.outbox); toast('Mémoire pleine : envoi sans les photos', true); }
+  if (item.path) treeAdd(item.path, 'local');
+  for (const x of item.extra || []) treeAdd(x.path, 'local');
+  for (const a of item.anos || []) { cachePut(a.path, 'local', a.obj); treeAdd(a.path, 'local'); }
+  for (const r of item.resolve || []) { const f = `anomalies/ouvertes/${r.name}.json`; const c = S.files[f]; treeDel(f); if (c) { const to = `anomalies/resolues/${r.name}.json`; cachePut(to, 'local', Object.assign({}, c.j, { statut: 'resolu', resolution: r.res })); treeAdd(to, 'local'); } }
+  if (item.path) cachePut(item.path, 'local', item.ctrl);
+  flush();
+}
+
+/* =====================================================================
+   INTERFACE
+   ===================================================================== */
+const app = $('#app'), layer = $('#layer');
+function go(view, arg) { S.prevView = S.view; S.view = view; S.arg = arg; window.scrollTo(0, 0); render(); }
+function render() {
+  const y = window.scrollY, same = render.last === S.view + '|' + S.arg;
+  render.last = S.view + '|' + S.arg;
+  if (!S.cfg) { app.innerHTML = viewActivation(); return; }
+  if (!S.user) { app.innerHTML = viewLogin(); return; }
+  let html;
+  switch (S.view) {
+    case 'wizard': html = viewWizard(); break;
+    case 'done': html = viewDone(); break;
+    case 'veh': html = shell(viewVeh()); break;
+    case 'defauts': html = shell(viewDefauts()); break;
+    case 'historique': html = shell(viewHist()); break;
+    case 'reglages': html = shell(viewReglages()); break;
+    default: S.view = 'home'; html = shell(viewHome());
+  }
+  app.innerHTML = html;
+  if (same) window.scrollTo(0, y);
+}
+function shell(inner) {
+  const nOpen = IDX.open.length;
+  const nav = [['home', 'home', 'Accueil'], ['defauts', 'alert', 'Défauts'], ['historique', 'hist', 'Historique'], ['reglages', 'gear', 'Réglages']];
+  return `
+  <header class="top">
+    ${EMBLEM}
+    <div class="tt"><h1>Montée en véhicule</h1><small>${esc(S.conf.centre || 'CS Cruzy / Quarante')} · ${esc(S.user.nom)}</small></div>
+    <button id="syncChip" class="chip-sync" data-act="sync">${syncInner()}</button>
+  </header>
+  ${inner}
+  ${S.view === 'home' ? `<button class="cta" data-act="pick">${ico('truck')} Monter en véhicule</button>` : ''}
+  <nav class="nav"><div class="in">${nav.map(([v, i, l]) => `<button class="${S.view === v ? 'on' : ''}" data-act="nav" data-v="${v}">${ico(i)}${l}${v === 'defauts' && nOpen ? `<span class="nb">${nOpen}</span>` : ''}</button>`).join('')}</div></nav>`;
+}
+function syncInner() {
+  if (S.syncing || S.flushing) return `${ico('sync')}<span>Synchro…</span>`;
+  if (S.outbox.length) return `<span class="dot"></span>${S.outbox.length} en attente`;
+  if (S.cfg && S.cfg.demo) return '<span class="dot"></span>Démo';
+  return S.online ? '<span class="dot"></span>À jour' : '<span class="dot"></span>Hors ligne';
+}
+function paintSync() {
+  const el = $('#syncChip'); if (!el) return;
+  el.className = 'chip-sync' + ((S.syncing || S.flushing) ? ' spin' : '') + ((!S.online || S.outbox.length) ? ' off' : '') + (S.cfg && S.cfg.demo ? ' demo' : '');
+  el.innerHTML = syncInner();
+}
+let toastT;
+function toast(msg, bad) {
+  const old = $('.toast'); if (old) old.remove();
+  const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = msg; document.body.appendChild(t);
+  clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 3200);
+}
+function sheet(html) { layer.innerHTML = `<div class="sheet-bg" data-act="close"></div><div class="sheet"><div class="in"><div class="grab"></div>${html}</div></div>`; }
+function closeSheet() { layer.innerHTML = ''; }
+
+/* ---------- activation & connexion ---------- */
+function viewActivation() {
+  return `<div class="splash">
+    ${EMBLEM}
+    <h1>Montée<br>en véhicule</h1>
+    <p class="sub">Centre de secours <b>Cruzy / Quarante</b></p>
+    <div class="card">
+      <div class="row" style="align-items:flex-start;gap:12px">
+        <div style="color:var(--red2)">${ico('link')}</div>
+        <div><b>Ce téléphone n’est pas encore relié au centre.</b>
+        <p class="muted small" style="margin:6px 0 0">Scanne le QR code d’activation affiché par le responsable (Réglages → Activer un téléphone), ou ouvre le lien d’activation reçu par message.</p></div>
+      </div>
+    </div>
+    <details class="card" style="margin-top:12px">
+      <summary style="font-weight:700;cursor:pointer">Configuration manuelle (responsable)</summary>
+      <div style="margin-top:14px">
+        <label class="fld"><span>Propriétaire GitHub</span><input class="inp" id="ac-o" value="galianachristian-cpu" autocapitalize="off" autocomplete="off"></label>
+        <label class="fld"><span>Dépôt des données (privé)</span><input class="inp" id="ac-r" value="monter-vehicule-data" autocapitalize="off" autocomplete="off"></label>
+        <label class="fld"><span>Jeton d’accès (fine-grained, Contents : lecture/écriture)</span><input class="inp" id="ac-t" type="password" placeholder="github_pat_…" autocapitalize="off" autocomplete="off"></label>
+        <button class="btn red block" data-act="activate">${ico('key')} Relier ce téléphone</button>
+      </div>
+    </details>
+    <button class="btn ghost block" style="margin-top:12px" data-act="demo">Essayer en mode démo</button>
+  </div>`;
+}
+function viewLogin() {
+  const known = new Set([...(S.conf.pompiers || [])]);
+  IDX.ctrls.slice(0, 200).forEach(c => known.add(c.auteur));
+  const eq = S.user && S.user.equipe || LS.get('mv.lastEq', '');
+  return `<div class="splash">
+    ${EMBLEM}
+    <h1>Qui monte<br>en véhicule&nbsp;?</h1>
+    <p class="sub">Prise de garde · <b>${esc(S.conf.centre || 'CS Cruzy / Quarante')}</b></p>
+    <div class="card">
+      <label class="fld"><span>Nom et prénom</span>
+        <input class="inp" id="lg-nom" list="lg-list" placeholder="ex. Torrentelle Mathis" autocomplete="name" value="${esc(LS.get('mv.lastNom', ''))}">
+        <datalist id="lg-list">${[...known].sort().map(n => `<option value="${esc(n)}">`).join('')}</datalist></label>
+      <label class="fld"><span>Équipe</span>
+        <div class="seg" id="lg-eq">${['1', '2', '3', '4', '5', '6', 'Autre'].map(e => `<button data-act="lgeq" data-e="${e}" class="${eq === e ? 'on def' : ''}">${e === 'Autre' ? 'Autre' : 'Éq. ' + e}</button>`).join('')}</div></label>
+      <button class="btn red block" style="margin-top:6px" data-act="login">C’est parti ${ico('chev')}</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- accueil ---------- */
+function viewHome() {
+  const vs = vehs(), start = gardeStart();
+  const states = vs.map(v => [v, vState(v)]);
+  const n = states.filter(([, s]) => s.monte).length;
+  const indispo = states.filter(([, s]) => s.indispo).length;
+  const mine = IDX.ctrls.filter(c => c.date >= start && slug(c.auteur) === slug(S.user.nom)).length;
+  return `
+  <section class="garde">
+    <div class="lbl">Garde en cours</div>
+    <div class="day">${esc(fDay(start))}</div>
+    <div class="prog"><i style="width:${vs.length ? Math.round(n / vs.length * 100) : 0}%"></i></div>
+    <div class="meta"><span><b>${n} / ${vs.length}</b> engins montés</span><span>${indispo ? `<b style="color:#ff9a9e">${indispo} indispo</b>` : (mine ? `${mine} par toi` : 'relève ' + p2(S.conf.releve || 7) + 'h')}</span></div>
+  </section>
+  ${S.outbox.length ? `<div class="card" style="margin-top:12px;border-color:rgba(255,174,31,.4)"><div class="row">${ico('wifi')}<div class="grow"><b>${S.outbox.length} contrôle${S.outbox.length > 1 ? 's' : ''} en attente d’envoi</b><div class="small muted">Gardé${S.outbox.length > 1 ? 's' : ''} sur le téléphone, envoi automatique dès que le réseau revient.</div></div><button class="btn sm" data-act="flush">Envoyer</button></div></div>` : ''}
+  ${W ? `<button class="card" data-act="start" data-id="${esc(W.vid)}" style="margin-top:12px;width:100%;text-align:left;border-color:rgba(229,35,44,.5)"><div class="row"><span style="color:var(--red2)">${ico('truck')}</span><div class="grow"><b>Montée en cours : ${esc(veh(W.vid).nom)}</b><div class="small muted">Touche pour reprendre là où tu t’es arrêté</div></div>${ico('chev')}</div></button>` : ''}
+  <button class="qrbtn" data-act="qrScan"><span class="qi">${ico('qr')}</span><span class="grow"><b>Scanner le QR code de l’engin</b><span class="small muted">Sur la pochette jaune du tableau</span></span>${ico('chev', 'chev')}</button>
+  <div class="sec-t"><b>Engins</b><span class="ln"></span>${IDX.open.length ? `<span>${IDX.open.length} défaut${IDX.open.length > 1 ? 's' : ''}</span>` : ''}</div>
+  <div class="vgrid">${states.map(([v, s]) => vCard(v, s)).join('')}</div>
+  <div style="height:30px"></div>`;
+}
+function vCard(v, s) {
+  const cls = s.indispo ? 'st-bad' : (s.monte ? 'st-ok' : '');
+  let pill;
+  if (s.indispo) pill = `<span class="pill bad">Indisponible</span>`;
+  else if (s.monte) pill = `<span class="pill ok">${ico('check')} ${fTime(s.last.date)} · ${esc(s.last.auteur.split(' ')[0])}</span>`;
+  else pill = `<span class="pill">À monter</span>`;
+  const unit = v.compteur === 'h' ? 'h' : 'km';
+  return `<button class="vcard ${cls}" data-act="veh" data-id="${esc(v.id)}">
+    ${s.anos.length ? `<span class="bdg ${s.indispo ? 'bad' : ''}">${s.anos.length}</span>` : ''}
+    <div class="vimg">${vehSvg(v.type)}</div>
+    <div class="vn">${esc(v.nom)}</div>
+    <div class="vp">${esc(v.plaque || TYPES[v.type] || '')}</div>
+    <div class="vs">${pill}</div>
+    <div class="vk">${s.last && s.last.cpt !== null ? nf(s.last.cpt) + ' ' + unit : '<span class="muted">Aucun relevé</span>'}</div>
+  </button>`;
+}
+
+/* ---------- fiche engin ---------- */
+function viewVeh() {
+  const v = veh(S.arg), s = vState(v), cs = ctrlsOf(v.id), unit = v.compteur === 'h' ? 'h' : 'km';
+  const pts = cs.filter(c => c.cpt !== null).slice(0, 24).reverse();
+  const last = s.last;
+  const d7 = cs.filter(c => c.date > Date.now() - 30 * 864e5).length;
+  const diff = pts.length > 1 ? pts[pts.length - 1].cpt - pts[pts.length - 2].cpt : null;
+  return `
+  <button class="btn sm ghost" data-act="nav" data-v="home" style="margin-left:-10px">${ico('back')} Engins</button>
+  <div class="hero">${vehSvg(v.type)}
+    <div class="row"><div class="grow"><h2>${esc(v.nom)}</h2><div class="muted">${esc([TYPES[v.type], v.plaque].filter(Boolean).join(' · '))}</div></div>
+    ${s.indispo ? '<span class="pill bad">Indisponible</span>' : s.monte ? '<span class="pill ok">Monté</span>' : '<span class="pill">À monter</span>'}</div>
+  </div>
+  <div class="kv">
+    <div><b>${last && last.cpt !== null ? nf(last.cpt) : '—'}</b><span>${unit === 'h' ? 'heures' : 'km'} au dernier relevé</span></div>
+    <div><b>${diff !== null ? (diff >= 0 ? '+' : '') + nf(diff) : '—'}</b><span>depuis le précédent</span></div>
+    <div><b>${d7}</b><span>contrôles sur 30 jours</span></div>
+  </div>
+  ${pts.length > 1 ? `<div class="card" style="margin-top:12px;padding:12px 12px 6px">${kmChart(pts, unit)}</div>` : ''}
+  <button class="btn red block" style="margin-top:14px;min-height:58px;font-size:18px" data-act="start" data-id="${esc(v.id)}">${ico('truck')} ${v.type === 'GE' ? 'Contrôler le groupe' : 'Monter dans le ' + esc(v.nom)}</button>
+  ${v.type === 'VSAV' ? hygCard(v) : ''}
+  <div class="sec-t"><b>Défauts en cours</b><span class="ln"></span>${s.anos.length}</div>
+  <div class="list">${s.anos.length ? s.anos.map(anoRow).join('') : `<div class="card muted small">${ico('check')} Aucun défaut signalé sur cet engin.</div>`}</div>
+  <button class="btn block" style="margin-top:10px" data-act="anoNew" data-id="${esc(v.id)}">${ico('alert')} Signaler un défaut</button>
+  <div class="sec-t"><b>Dernières montées</b><span class="ln"></span></div>
+  <div class="list">${cs.slice(0, 12).map(c => ctrlRow(c, true)).join('') || '<div class="card muted small">Pas encore de montée enregistrée.</div>'}</div>
+  ${FAT[v.type] ? `<div class="sec-t"><b>Armement type</b><span class="ln"></span>MAJ ${esc(FAT[v.type].maj)}</div>
+    <button class="li" data-act="fatView" data-t="${esc(v.type)}"><div class="lic">${ico('box')}</div><div class="grow"><div class="lt">FAT ${esc(v.type)}</div><div class="ls">${esc(FAT[v.type].nom)}</div></div>${ico('chev', 'chev')}</button>` : ''}
+  <div style="height:20px"></div>`;
+}
+function hygCard(v) {
+  const h = IDX.hyg.find(x => x.vid === v.id), j = h ? Math.floor((Date.now() - h.date) / 864e5) : null;
+  const late = j === null || j >= 7;
+  return `<div class="card" style="margin-top:12px;${late ? 'border-color:rgba(255,174,31,.45)' : ''}"><div class="row"><span style="color:${late ? 'var(--amb)' : 'var(--grn)'}">${ico('drop')}</span><div class="grow"><b>Protocole hygiène n°2</b><div class="small muted">${h ? `Désinfection complète ${j === 0 ? 'aujourd’hui' : j === 1 ? 'hier' : 'il y a ' + j + ' jours'} (${fDate(h.date)})` : 'Aucune désinfection complète enregistrée'}${late ? ' · à faire une fois par semaine' : ''}</div></div></div></div>`;
+}
+function kmChart(pts, unit) {
+  const W_ = 600, H = 120, pad = 8;
+  const min = Math.min(...pts.map(p => p.cpt)), max = Math.max(...pts.map(p => p.cpt)), rg = Math.max(1, max - min);
+  const xy = pts.map((p, i) => [pad + i * (W_ - 2 * pad) / (pts.length - 1), H - 22 - (p.cpt - min) / rg * (H - 40)]);
+  const line = xy.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('');
+  return `<svg class="kmchart" viewBox="0 0 ${W_} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="gKm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e5232c" stop-opacity=".45"/><stop offset="1" stop-color="#e5232c" stop-opacity="0"/></linearGradient></defs>
+    <path d="${line}L${xy[xy.length - 1][0]} ${H - 18}L${xy[0][0]} ${H - 18}z" fill="url(#gKm)"/>
+    <path d="${line}" fill="none" stroke="#ff4a50" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    ${xy.map(q => `<circle cx="${q[0]}" cy="${q[1]}" r="3.5" fill="#fff"/>`).join('')}
+    <text x="${pad}" y="${H - 4}" fill="#8d95a8" font-size="12">${fDate(pts[0].date)}</text>
+    <text x="${W_ - pad}" y="${H - 4}" fill="#8d95a8" font-size="12" text-anchor="end">${fDate(pts[pts.length - 1].date)} · ${nf(max)} ${unit}</text>
+  </svg>`;
+}
+function ctrlRow(c, noVeh) {
+  const v = veh(c.vid), unit = v.compteur === 'h' ? 'h' : 'km';
+  const ic = c.st === 'ok' ? `<div class="lic" style="color:var(--grn)">${ico('check')}</div>` : `<div class="lic" style="color:${c.st === 'indispo' ? 'var(--red2)' : 'var(--amb)'}">${ico('alert')}</div>`;
+  return `<button class="li" data-act="ctrl" data-p="${esc(c.p)}">${ic}
+    <div class="grow"><div class="lt ell">${noVeh ? esc(c.auteur) : esc(v.nom) + ' · <span class="muted" style="font-weight:600">' + esc(c.auteur) + '</span>'}</div>
+    <div class="ls">${sameDay(c.date, new Date()) ? 'Aujourd’hui' : fDate(c.date)} à ${fTime(c.date)}${c.cpt !== null ? ' · ' + nf(c.cpt) + ' ' + unit : ''}</div></div>${ico('chev', 'chev')}</button>`;
+}
+function anoRow(a) {
+  const j = (S.files[a.p] || {}).j, v = veh(a.vid);
+  return `<button class="li g-${a.grav}" data-act="ano" data-p="${esc(a.p)}">
+    <div class="grow"><div class="lt ell">${esc(j ? j.titre : 'Défaut')}</div>
+    <div class="ls ell">${esc(v.nom)} · ${GRAV[a.grav]} · ${fDate(a.date)}${j && j.auteur ? ' · ' + esc(j.auteur.nom) : ''}</div></div>
+    ${j && j.photos && j.photos.length ? `<span class="pill">${ico('photo')}${j.photos.length}</span>` : ''}${ico('chev', 'chev')}</button>`;
+}
+
+/* ---------- défauts ---------- */
+function viewDefauts() {
+  const open = S.anoTab === 'open';
+  const list = open ? IDX.open : IDX.res.slice(0, 60);
+  const order = { indispo: 0, majeur: 1, mineur: 2 };
+  let body = '';
+  if (!list.length) body = `<div class="empty">${ico('check')}<div class="big">${open ? 'Aucun défaut en cours' : 'Rien de réglé pour l’instant'}</div>${open ? 'Tous les engins sont opérationnels.' : ''}</div>`;
+  else if (open) {
+    for (const v of vehs(true)) {
+      const as = list.filter(a => a.vid === v.id).sort((a, b) => order[a.grav] - order[b.grav]);
+      if (as.length) body += `<div class="day-h">${esc(v.nom)}</div><div class="list">${as.map(anoRow).join('')}</div>`;
+    }
+  } else body = `<div class="list" style="margin-top:12px">${list.map(a => { const j = (S.files[a.p] || {}).j; return `<button class="li" data-act="ano" data-p="${esc(a.p)}"><div class="lic" style="color:var(--grn)">${ico('check')}</div><div class="grow"><div class="lt ell">${esc(j ? j.titre : 'Défaut ' + veh(a.vid).nom)}</div><div class="ls">${esc(veh(a.vid).nom)} · signalé le ${fDate(a.date)}</div></div>${ico('chev', 'chev')}</button>`; }).join('')}</div>`;
+  if (!open) setTimeout(() => lazyRes(list), 0);
+  return `<div class="wz-h" style="margin-top:6px">Défauts</div>
+  <div class="tabs"><button class="${open ? 'on' : ''}" data-act="anoTab" data-t="open">En cours (${IDX.open.length})</button><button class="${!open ? 'on' : ''}" data-act="anoTab" data-t="res">Réglés</button></div>
+  ${body}
+  <button class="btn block" style="margin-top:16px" data-act="anoNew">${ico('plus')} Signaler un défaut</button>`;
+}
+let lazyBusy = false;
+async function lazyRes(list) {
+  if (lazyBusy) return; lazyBusy = true;
+  const miss = list.filter(a => !S.files[a.p]).slice(0, 20);
+  if (miss.length) { await Promise.all(miss.map(a => readJSON(a.p).catch(() => null))); lazyBusy = false; if (S.view === 'defauts' && S.anoTab === 'res') render(); }
+  lazyBusy = false;
+}
+async function openAno(p) {
+  sheet(`<div class="empty"><div class="spinner"></div>Chargement…</div>`);
+  let a; try { a = await readJSON(p); } catch (e) { a = null; }
+  if (!a) { sheet(`<h3>Défaut</h3><p class="muted">Impossible de charger ce défaut (hors ligne ?).</p><button class="btn block" data-act="close">Fermer</button>`); return; }
+  const open = p.startsWith('anomalies/ouvertes/'), d = new Date(a.date);
+  sheet(`
+    <span class="pill ${a.gravite === 'indispo' ? 'bad' : 'warn'}">${GRAV[a.gravite]}</span>
+    <h3 style="margin-top:10px">${esc(a.titre)}</h3>
+    <div class="muted">${esc(a.vehicule.nom)} · ${fDate(d)} à ${fTime(d)} · ${esc(a.auteur.nom)}</div>
+    ${a.detail ? `<p style="white-space:pre-wrap">${esc(a.detail)}</p>` : ''}
+    ${a.photos && a.photos.length ? `<div class="gal">${a.photos.map(ph => `<img data-src="${esc(ph)}" data-act="zoom" alt="">`).join('')}</div>` : ''}
+    ${a.resolution ? `<div class="card" style="margin-top:14px;border-color:rgba(39,207,124,.4)"><b style="color:#86f2bb">${ico('check')} Réglé le ${fDate(new Date(a.resolution.date))}</b><div class="small muted">par ${esc(a.resolution.par)}${a.resolution.note ? ' — ' + esc(a.resolution.note) : ''}</div></div>` : ''}
+    ${open ? `<label class="fld" style="margin-top:16px"><span>Comment ça a été réglé ? (facultatif)</span><textarea class="inp" id="res-note" placeholder="ex. ampoule changée, matériel remplacé…"></textarea></label>
+    <button class="btn grn block" data-act="anoResolve" data-p="${esc(p)}">${ico('check')} Marquer comme réglé</button>` : ''}
+    <button class="btn ghost block" style="margin-top:8px" data-act="close">Fermer</button>`);
+  loadImgs(layer);
+}
+function loadImgs(root) {
+  root.querySelectorAll('img[data-src]').forEach(async img => { try { img.src = await imageUrl(img.dataset.src); } catch (e) { img.alt = 'photo indisponible'; } });
+}
+function anoNewSheet(vid) {
+  const D = { vid: vid || '', titre: '', grav: 'mineur', note: '', photos: [] };
+  anoNewSheet.D = D;
+  const draw = () => sheet(`
+    <h3>Signaler un défaut</h3>
+    <p class="muted small" style="margin-top:0">Hors montée en véhicule : un souci constaté pendant la garde.</p>
+    <label class="fld"><span>Engin</span><select class="inp" id="an-v">${vehs(true).map(v => `<option value="${esc(v.id)}" ${D.vid === v.id ? 'selected' : ''}>${esc(v.nom)}</option>`).join('')}</select></label>
+    <label class="fld"><span>Quel est le problème ?</span><input class="inp" id="an-t" value="${esc(D.titre)}" placeholder="ex. Gyrophare arrière HS"></label>
+    <div class="qchips">${QUICK.map(q => `<button data-act="anQuick" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+    <div class="fld"><span>Gravité</span><div class="seg">${Object.keys(GRAV).map(g => `<button class="g-${g} ${D.grav === g ? 'on' : ''}" data-act="anGrav" data-g="${g}">${GRAV[g]}</button>`).join('')}</div><div class="small muted" style="margin:6px 2px 0">${GRAV_TXT[D.grav]}</div></div>
+    <label class="fld"><span>Détails</span><textarea class="inp" id="an-n" placeholder="Où, quoi, depuis quand…">${esc(D.note)}</textarea></label>
+    <div class="phs">${D.photos.map((ph, i) => `<div class="ph"><img src="${ph}"><button data-act="anPhDel" data-i="${i}">${ico('x')}</button></div>`).join('')}<button class="add" data-act="anPh">${ico('cam')}</button></div>
+    <button class="btn red block" style="margin-top:16px" data-act="anSend">${ico('send')} Envoyer le défaut</button>
+    <button class="btn ghost block" style="margin-top:6px" data-act="close">Annuler</button>`);
+  anoNewSheet.draw = () => { D.vid = $('#an-v').value; D.titre = $('#an-t').value; D.note = $('#an-n').value; draw(); };
+  draw();
+}
+
+/* ---------- historique ---------- */
+function viewHist() {
+  const list = IDX.ctrls.filter(c => S.filt === 'all' || c.vid === S.filt).slice(0, 150);
+  let body = '', day = '';
+  for (const c of list) {
+    const k = c.date.toDateString();
+    if (k !== day) { day = k; body += `<div class="day-h">${sameDay(c.date, new Date()) ? 'Aujourd’hui' : esc(fDay(c.date))}</div>`; }
+    body += ctrlRow(c);
+  }
+  return `<div class="wz-h" style="margin-top:6px">Historique</div>
+  <div class="chips"><button class="chip ${S.filt === 'all' ? 'on' : ''}" data-act="filt" data-id="all">Tous</button>${vehs(true).map(v => `<button class="chip ${S.filt === v.id ? 'on' : ''}" data-act="filt" data-id="${esc(v.id)}">${esc(v.nom)}</button>`).join('')}</div>
+  <div class="list">${body || `<div class="empty">${ico('hist')}<div class="big">Aucune montée</div>Les contrôles apparaîtront ici.</div>`}</div>`;
+}
+async function openCtrl(p) {
+  sheet(`<div class="empty"><div class="spinner"></div>Chargement…</div>`);
+  let c; try { c = await readJSON(p); } catch (e) { c = null; }
+  if (!c) { sheet(`<h3>Montée en véhicule</h3><p class="muted">Impossible de charger ce contrôle (hors ligne ?).</p><button class="btn block" data-act="close">Fermer</button>`); return; }
+  const v = veh(c.vehicule.id), d = new Date(c.date), unit = v.compteur === 'h' ? 'h' : 'km';
+  const ess = Object.entries(c.essais || {}), essKo = ess.filter(([, e]) => e.etat === 'def');
+  const lv = Object.entries(c.niveaux || {});
+  sheet(`
+    <div class="row"><div style="width:110px">${vehSvg(v.type)}</div><div class="grow"><h3 style="margin:0">${esc(c.vehicule.nom)}</h3><div class="muted small">${esc(fDay(d))} · ${fTime(d)}</div></div></div>
+    <div class="rec"><div class="k">${ico('user')}</div><div><div class="t">${esc(c.auteur.nom)}</div><div class="d">${c.auteur.equipe ? 'Équipe ' + esc(c.auteur.equipe) : ''}</div></div></div>
+    <div class="rec"><div class="k">${ico('gauge')}</div><div class="grow"><div class="t">${c.compteur.valeur !== null && c.compteur.valeur !== undefined ? nf(c.compteur.valeur) + ' ' + unit : 'Compteur non relevé'}</div>
+      <div class="d">${c.compteur.heuresPompe ? 'Heures pompe : <b>' + nf(c.compteur.heuresPompe) + ' h</b> · ' : ''}${c.compteur.lu ? 'lu par le scanner' : 'saisi à la main'}</div>
+      ${c.compteur.photo ? `<div class="gal" style="grid-template-columns:1fr"><img data-src="${esc(c.compteur.photo)}" data-act="zoom" style="aspect-ratio:4/1" alt=""></div>` : ''}</div></div>
+    ${lv.length ? `<div class="rec"><div class="k">${ico('fuel')}</div><div><div class="t">Niveaux</div><div class="d">${lv.map(([k, n]) => `${esc((NIVEAUX[k] || { l: k }).l)} <b>${n}/6</b>${c.plein && c.plein[k] ? ' (plein fait)' : ''}`).join(' · ')}</div></div></div>` : ''}
+    ${ess.length ? `<div class="rec"><div class="k">${ico('tool')}</div><div><div class="t">Essais : ${essKo.length ? `<span style="color:var(--red2)">${essKo.length} défaut${essKo.length > 1 ? 's' : ''}</span>` : 'tout est OK'}</div><div class="d">${essKo.map(([, e]) => `<b>${esc(e.l)}</b>${e.note ? ' : ' + esc(e.note) : ''}`).join('<br>') || ess.length + ' points vérifiés'}</div></div></div>` : ''}
+    ${c.armement ? `<div class="rec"><div class="k">${ico('box')}</div><div><div class="t">Armement ${c.armement.fait ? '' : '(non vérifié)'}</div><div class="d">${c.armement.fait ? `${c.armement.conformes} conformes${c.armement.manquants.length ? `, <b style="color:var(--red2)">${c.armement.manquants.length} manquant(s)</b> : ` + c.armement.manquants.map(m => esc(m.l) + (m.note ? ' (' + esc(m.note) + ')' : '')).join(', ') : ''}${c.armement.nonVerifies ? `, ${c.armement.nonVerifies} non vérifiés` : ''}` : 'Inventaire FAT non réalisé à cette montée'}</div></div></div>` : ''}
+    ${(c.soucis || []).length ? `<div class="rec"><div class="k">${ico('alert')}</div><div><div class="t">Soucis signalés</div><div class="d">${c.soucis.map(s => `<b>${esc(s.titre)}</b> (${GRAV[s.gravite]})${s.note ? ' — ' + esc(s.note) : ''}`).join('<br>')}</div></div></div>` : ''}
+    ${c.hygiene2 ? `<div class="rec"><div class="k" style="color:var(--grn)">${ico('drop')}</div><div><div class="t">Protocole hygiène n°2 réalisé</div><div class="d">Désinfection complète de la cellule</div></div></div>` : ''}
+    ${(c.regles || []).length ? `<div class="rec"><div class="k" style="color:var(--grn)">${ico('check')}</div><div><div class="t">Défauts constatés réglés</div><div class="d">${c.regles.map(esc).join('<br>')}</div></div></div>` : ''}
+    ${c.observation ? `<div class="rec"><div class="k">${ico('note')}</div><div><div class="t">Observation</div><div class="d" style="white-space:pre-wrap">${esc(c.observation)}</div></div></div>` : ''}
+    ${(c.photos || []).length ? `<div class="gal">${c.photos.map(ph => `<img data-src="${esc(ph)}" data-act="zoom" alt="">`).join('')}</div>` : ''}
+    <button class="btn block" style="margin-top:16px" data-act="close">Fermer</button>`);
+  loadImgs(layer);
+}
+function fatSheet(t) {
+  const f = FAT[t];
+  sheet(`<h3>FAT ${esc(t)}</h3><div class="muted small">${esc(f.nom)} · MAJ ${esc(f.maj)} · SDIS 34</div>
+  ${f.sections.map(([n, items]) => `<div class="day-h">${esc(n)}</div><div class="card" style="padding:4px 12px">${items.map(([q, l, d]) => `<div class="it"><div class="q">${q || 'X'}</div><div class="l">${esc(l)}${d ? `<small>${esc(d)}</small>` : ''}</div></div>`).join('')}</div>`).join('')}
+  <button class="btn block" style="margin-top:16px" data-act="close">Fermer</button>`);
+}
+
+/* =====================================================================
+   MONTÉE EN VÉHICULE (assistant pas à pas)
+   ===================================================================== */
+function pickSheet() {
+  sheet(`<h3>Quel engin montes-tu&nbsp;?</h3><p class="muted small" style="margin-top:0">Garde du ${esc(fDay(gardeStart()))}</p>
+  <button class="qrbtn" style="margin-top:4px" data-act="qrScan"><span class="qi">${ico('qr')}</span><span class="grow"><b>Scanner le QR code</b><span class="small muted">de la pochette de l’engin</span></span></button>
+  <div class="vgrid" style="margin-top:12px">${vehs().map(v => vCard(v, vState(v)).replace('data-act="veh"', 'data-act="start"')).join('')}</div>`);
+}
+function startWizard(vid) {
+  closeSheet();
+  if (W && W.vid === vid && Date.now() - W.t0 < 6 * 3600e3) { go('wizard'); toast('Montée reprise là où tu l’avais laissée'); return; }
+  const v = veh(vid);
+  W = { vid, t0: Date.now(), step: 0, km: '', hp: '', lu: false, photoCpt: null, niv: {}, plein: {}, ess: {}, arm: { on: null, it: {}, notes: {}, open: 0 }, sou: [], obs: '', anc: {} };
+  openOf(vid).forEach(a => W.anc[a.name] = 'la');
+  saveDraft(); go('wizard');
+}
+function saveDraft() { if (W && !LS.set('mv.draft', W)) { const c = JSON.parse(JSON.stringify(W)); c.sou.forEach(s => s.photos = []); Object.values(c.ess).forEach(e => e.photos = []); c.photoCpt = null; LS.set('mv.draft', c); } }
+function wSteps() {
+  const v = veh(W.vid), st = [];
+  if (openOf(W.vid).length) st.push('anciens');
+  st.push('compteur');
+  if ((v.niveaux || []).length) st.push('niveaux');
+  st.push('essais');
+  if (FAT[v.type]) st.push('armement');
+  st.push('soucis', 'envoi');
+  return st;
+}
+const STEP_T = { anciens: 'Défauts connus', compteur: 'Compteur', niveaux: 'Niveaux', essais: 'Essais', armement: 'Armement', soucis: 'Soucis', envoi: 'Validation' };
+function viewWizard() {
+  if (!W) { S.view = 'home'; return shell(viewHome()); }
+  const v = veh(W.vid), st = wSteps(); W.step = Math.min(W.step, st.length - 1);
+  const cur = st[W.step];
+  const body = ({ anciens: wAnciens, compteur: wCompteur, niveaux: wNiveaux, essais: wEssais, armement: wArmement, soucis: wSoucis, envoi: wEnvoi })[cur](v);
+  const last = W.step === st.length - 1;
+  return `
+  <div class="wz-top">
+    <div class="row"><button class="btn sm ghost" style="padding:0 6px;min-height:40px" data-act="wQuit">${ico('x')}</button>
+      <div class="vmini">${vehSvg(v.type)}</div>
+      <div class="grow"><h2>${esc(v.nom)}</h2><div class="st">Étape ${W.step + 1}/${st.length} · ${STEP_T[cur]}</div></div></div>
+    <div class="steps">${st.map((s, i) => `<i class="${i < W.step ? 's-done' : i === W.step ? 's-cur' : ''}"></i>`).join('')}</div>
+  </div>
+  ${body}
+  <div style="height:90px"></div>
+  <div class="wz-bot"><div class="in">
+    ${W.step ? `<button class="btn back" data-act="wPrev" aria-label="Précédent">${ico('back')}</button>` : ''}
+    ${last ? `<button class="btn grn" data-act="wSend">${ico('send')} Valider la montée</button>` : `<button class="btn red" data-act="wNext">Suivant ${ico('chev')}</button>`}
+  </div></div>`;
+}
+function wAnciens(v) {
+  const as = openOf(v.id);
+  return `<div class="wz-h">Défauts déjà signalés</div><p class="wz-sub">Vérifie s’ils sont toujours là. Ceux que tu marques « Réglé » seront clos.</p>
+  ${as.map(a => { const j = (S.files[a.p] || {}).j || {}; const s = W.anc[a.name] || 'la'; return `<div class="ess ${s === 'regle' ? '' : 'def'}">
+    <div class="hd"><div class="grow"><div class="nm">${esc(j.titre || 'Défaut')}</div><div class="ds">${GRAV[a.grav]} · signalé le ${fDate(a.date)}${j.auteur ? ' par ' + esc(j.auteur.nom) : ''}</div></div></div>
+    <div class="seg" style="margin-top:10px"><button class="${s === 'la' ? 'on def' : ''}" data-act="anc" data-n="${esc(a.name)}" data-s="la">Toujours là</button><button class="${s === 'regle' ? 'on def' : ''}" data-act="anc" data-n="${esc(a.name)}" data-s="regle" style="${s === 'regle' ? 'background:var(--grn);color:#04140b' : ''}">${ico('check')} Réglé</button></div></div>`; }).join('')}`;
+}
+function cptHint(v) {
+  const last = ctrlsOf(v.id).find(c => c.cpt !== null), val = +W.km;
+  if (!last) return `<span>Premier relevé pour cet engin</span>`;
+  let w = '';
+  if (W.km !== '' && val < last.cpt) w = `<span class="warn">Inférieur au dernier relevé !</span>`;
+  else if (W.km !== '' && val - last.cpt > (v.compteur === 'h' ? 200 : 3000)) w = `<span class="warn">+${nf(val - last.cpt)} : vérifie le chiffre</span>`;
+  else if (W.km !== '') w = `<span>+${nf(val - last.cpt)} ${v.compteur === 'h' ? 'h' : 'km'}</span>`;
+  return `<span>Dernier : <b>${nf(last.cpt)}</b> le ${fDate(last.date)}</span>${w}`;
+}
+function wCompteur(v) {
+  const h = v.compteur === 'h';
+  return `<div class="wz-h">${h ? 'Heures de fonctionnement' : 'Kilométrage'}</div>
+  <p class="wz-sub">${h ? 'Relève le compteur horaire du groupe.' : 'Scanne le compteur du tableau de bord ou tape le chiffre.'}</p>
+  <div class="odo"><input id="in-km" data-in="km" inputmode="numeric" pattern="[0-9]*" placeholder="000000" value="${esc(W.km)}" autocomplete="off"><span>${h ? 'h' : 'km'}</span></div>
+  <div class="odo-h" id="kmHint">${cptHint(v)}</div>
+  <button class="btn red block" data-act="scan" data-f="km" style="min-height:56px">${ico('scan')} Scanner le compteur</button>
+  ${W.photoCpt ? `<div class="shot"><img src="${W.photoCpt}" alt=""><div class="grow small"><b>Photo du compteur</b><div class="muted">${W.lu ? 'Chiffre lu automatiquement' : 'Jointe au contrôle'}</div></div><button class="btn sm ghost" data-act="cptDel">${ico('trash')}</button></div>` : ''}
+  ${v.heures ? `<div class="sec-t"><b>Heures pompe</b><span class="ln"></span>facultatif</div>
+    <div class="odo"><input data-in="hp" inputmode="numeric" pattern="[0-9]*" placeholder="0000" value="${esc(W.hp)}" style="font-size:34px"><span>h</span></div>
+    <button class="btn block" style="margin-top:10px" data-act="scan" data-f="hp">${ico('scan')} Scanner le compteur pompe</button>` : ''}`;
+}
+function gaugeColor(n) { return ['#e5232c', '#ff5a2b', '#ff8a1f', '#ffc21f', '#9fdc3a', '#27cf7c'][n - 1]; }
+function wNiveaux(v) {
+  return `<div class="wz-h">Niveaux</div><p class="wz-sub">Touche la jauge au bon niveau (1 = réserve, 6 = plein).</p>
+  ${(v.niveaux || []).map(k => { const N = NIVEAUX[k] || { l: k, i: 'drop', c: '#fff' }, n = W.niv[k] || 0; return `<div class="lvl">
+    <div class="hd"><span style="color:${N.c}">${ico(N.i)}</span><span class="nm">${esc(N.l)}</span><span class="val" style="color:${n ? gaugeColor(n) : 'var(--mut2)'}">${n ? (n === 6 ? 'Plein' : n + '/6') : '—'}</span></div>
+    <div class="gauge">${[1, 2, 3, 4, 5, 6].map(i => `<button data-act="lvl" data-k="${k}" data-n="${i}" class="${i <= n ? 'on' : ''}" style="${i <= n ? `background:${gaugeColor(n)}` : ''}">${i === 1 ? '<span>Réserve</span>' : i === 6 ? '<span>Plein</span>' : ''}</button>`).join('')}</div>
+    <div class="ft"><span class="small ${n && n <= 3 && !W.plein[k] ? '' : 'muted'}" style="${n && n <= 3 && !W.plein[k] ? 'color:var(--amb);font-weight:700' : ''}">${n && n <= 3 && !W.plein[k] ? 'Niveau bas : pense au plein' : ''}</span>
+    <button class="tog ${W.plein[k] ? 'on' : ''}" data-act="plein" data-k="${k}">${ico('check')} Plein fait</button></div></div>`; }).join('')}`;
+}
+function essList(v) { return (ESSAIS[v.type] || ESSAIS.FPT); }
+function photoStrip(arr, act, extra) { return `<div class="phs">${arr.map((ph, i) => `<div class="ph"><img src="${ph}" alt=""><button data-act="${act}Del" ${extra} data-j="${i}">${ico('x')}</button></div>`).join('')}<button class="add" data-act="${act}" ${extra}>${ico('cam')}</button></div>`; }
+function wEssais(v) {
+  const L = essList(v), done = L.filter(([k]) => W.ess[k] && W.ess[k].etat).length;
+  return `<div class="wz-h">Essais et état</div><p class="wz-sub">${done}/${L.length} vérifiés. Touche ✓ si c’est bon, ✕ s’il y a un souci.</p>
+  ${v.type === 'VSAV' ? `<button class="hyg ${W.hyg ? 'on' : ''}" data-act="hygT" style="width:100%;text-align:left"><span style="color:${W.hyg ? 'var(--grn)' : 'var(--mut)'}">${ico('drop')}</span><span class="grow"><b>Protocole hygiène n°2 fait</b><span class="small muted" style="display:block">Désinfection complète de la cellule (hebdo, après blessé grave ou maladie particulière)</span></span><span class="tog ${W.hyg ? 'on' : ''}">${W.hyg ? 'Oui' : 'Non'}</span></button>` : ''}
+  <button class="btn block" style="margin-bottom:12px" data-act="essAll">${ico('check')} Tout est OK</button>
+  ${L.map(([k, l, d]) => { const e = W.ess[k] || {}; return `<div class="ess ${e.etat === 'def' ? 'def' : ''}">
+    <div class="hd"><div class="grow"><div class="nm">${esc(l)}</div><div class="ds">${esc(d)}</div></div>
+    <div class="tri"><button class="ok ${e.etat === 'ok' ? 'on' : ''}" data-act="ess" data-k="${k}" data-s="ok" aria-label="OK">${ico('check')}</button><button class="ko ${e.etat === 'def' ? 'on' : ''}" data-act="ess" data-k="${k}" data-s="def" aria-label="Défaut">${ico('x')}</button></div></div>
+    ${e.etat === 'def' ? `<div class="more">
+      <textarea class="inp" data-in="essNote" data-k="${k}" placeholder="Quel est le problème ?" style="min-height:64px">${esc(e.note || '')}</textarea>
+      <div class="seg" style="margin-top:10px">${Object.keys(GRAV).map(g => `<button class="g-${g} ${(e.grav || 'mineur') === g ? 'on' : ''}" data-act="essGrav" data-k="${k}" data-g="${g}">${GRAV[g]}</button>`).join('')}</div>
+      ${photoStrip(e.photos || [], 'essPh', `data-k="${k}"`)}</div>` : ''}
+  </div>`; }).join('')}`;
+}
+function ringSvg(done, ko, tot) {
+  const r = 16, c = 2 * Math.PI * r, f = tot ? done / tot : 0;
+  return `<svg class="ring" viewBox="0 0 40 40"><circle cx="20" cy="20" r="${r}" fill="none" stroke="#262c39" stroke-width="4"/>
+    <circle cx="20" cy="20" r="${r}" fill="none" stroke="${ko ? '#ff4a50' : f === 1 ? '#27cf7c' : '#ffae1f'}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${c * f} ${c}" transform="rotate(-90 20 20)"/>
+    <text x="20" y="24.5" text-anchor="middle" font-size="12" font-weight="800" fill="#f2f4f8">${ko ? '!' : f === 1 ? '✓' : Math.round(f * 100)}</text></svg>`;
+}
+function wArmement(v) {
+  const F = FAT[v.type];
+  if (W.arm.on === null || W.arm.on === false) return `<div class="wz-h">Armement</div><p class="wz-sub">Inventaire selon la FAT ${esc(v.type)} (MAJ ${esc(F.maj)}).</p>
+    <button class="li" data-act="armOn" style="padding:18px 16px"><div class="lic" style="background:rgba(229,35,44,.18);color:var(--red2)">${ico('box')}</div><div class="grow"><div class="lt">Je vérifie l’armement</div><div class="ls">${F.sections.length} zones · ${F.sections.reduce((n, s) => n + s[1].length, 0)} éléments</div></div>${ico('chev', 'chev')}</button>
+    <button class="li ${W.arm.on === false ? 'on' : ''}" data-act="armOff" style="padding:18px 16px;margin-top:8px;${W.arm.on === false ? 'border-color:var(--txt)' : ''}"><div class="lic">${ico('chev')}</div><div class="grow"><div class="lt">Pas d’inventaire aujourd’hui</div><div class="ls">Je signale seulement ce que j’ai remarqué</div></div>${W.arm.on === false ? ico('check') : ''}</button>`;
+  let tot = 0, ok = 0, ko = 0;
+  F.sections.forEach((s, si) => s[1].forEach((_, ii) => { tot++; const x = W.arm.it[si + '-' + ii]; if (x === 'ok') ok++; if (x === 'ko') ko++; }));
+  return `<div class="wz-h">Armement</div><p class="wz-sub">${ok + ko}/${tot} vérifiés${ko ? ` · <b style="color:var(--red2)">${ko} manquant${ko > 1 ? 's' : ''}</b>` : ''}. Ouvre chaque zone, ou valide-la d’un coup si tout y est.</p>
+  ${F.sections.map(([n, items], si) => {
+    let d = 0, k = 0; items.forEach((_, ii) => { const x = W.arm.it[si + '-' + ii]; if (x) d++; if (x === 'ko') k++; });
+    const open = W.arm.open === si;
+    return `<div class="armsec"><button class="hd" data-act="armOpen" data-s="${si}">${ringSvg(d, k, items.length)}<div class="grow"><div class="nm">${esc(n)}</div><div class="ds">${d}/${items.length} vérifiés${k ? ` · ${k} manquant${k > 1 ? 's' : ''}` : ''}</div></div>${ico(open ? 'back' : 'chev', 'chev')}</button>
+    ${open ? `<div class="body"><button class="btn sm block" style="margin:6px 0 4px" data-act="armSec" data-s="${si}">${ico('check')} Toute la zone est conforme</button>
+      ${items.map(([q, l, dd], ii) => { const key = si + '-' + ii, x = W.arm.it[key]; return `<div class="it ${x === 'ko' ? 'ko' : ''}"><div class="q">${q || 'X'}</div><div class="l">${esc(l)}${dd ? `<small>${esc(dd)}</small>` : ''}</div>
+        <div class="tri"><button class="ok ${x === 'ok' ? 'on' : ''}" data-act="armIt" data-k="${key}" data-s="ok">${ico('check')}</button><button class="ko ${x === 'ko' ? 'on' : ''}" data-act="armIt" data-k="${key}" data-s="ko">${ico('x')}</button></div></div>
+        ${x === 'ko' ? `<input class="inp it-note" style="width:calc(100% - 44px);min-height:42px" data-in="armNote" data-k="${key}" placeholder="Précision (ex. 1 sur 4 manquant)" value="${esc(W.arm.notes[key] || '')}">` : ''}`; }).join('')}</div>` : ''}</div>`;
+  }).join('')}
+  <button class="btn ghost block" data-act="armOff">Arrêter l’inventaire</button>`;
+}
+function wSoucis(v) {
+  return `<div class="wz-h">Un souci à signaler&nbsp;?</div><p class="wz-sub">Choc, voyant, matériel abîmé… Ajoute une photo si besoin. Sinon passe à la suite.</p>
+  ${W.sou.map((s, i) => `<div class="sou">
+    <div class="row" style="margin-bottom:10px"><b class="grow">Souci ${i + 1}</b><button class="btn sm ghost" data-act="souDel" data-i="${i}">${ico('trash')}</button></div>
+    <input class="inp" data-in="souT" data-i="${i}" placeholder="Quel est le problème ?" value="${esc(s.titre)}" style="margin-bottom:10px">
+    ${s.titre ? '' : `<div class="qchips">${QUICK.map(q => `<button data-act="souQ" data-i="${i}" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>`}
+    <div class="seg">${Object.keys(GRAV).map(g => `<button class="g-${g} ${s.grav === g ? 'on' : ''}" data-act="souGrav" data-i="${i}" data-g="${g}">${GRAV[g]}</button>`).join('')}</div>
+    <textarea class="inp" data-in="souN" data-i="${i}" placeholder="Détails (où, quoi…)" style="margin-top:10px;min-height:64px">${esc(s.note)}</textarea>
+    ${photoStrip(s.photos, 'souPh', `data-i="${i}"`)}
+  </div>`).join('')}
+  <button class="btn block" data-act="souAdd" style="border-style:dashed">${ico('plus')} Ajouter un souci</button>
+  <div class="sec-t"><b>Observation</b><span class="ln"></span>facultatif</div>
+  <textarea class="inp" data-in="obs" placeholder="Un mot pour l’équipe ou le responsable…">${esc(W.obs)}</textarea>`;
+}
+function collect(v) {
+  // rassemble ce qui deviendra des défauts
+  const out = [];
+  for (const [k, l] of essList(v)) { const e = W.ess[k]; if (e && e.etat === 'def') out.push({ titre: l, detail: e.note || '', grav: e.grav || 'mineur', photos: e.photos || [], src: 'essai' }); }
+  if (W.arm.on && FAT[v.type]) FAT[v.type].sections.forEach(([n, items], si) => items.forEach(([q, l], ii) => { const key = si + '-' + ii; if (W.arm.it[key] === 'ko') out.push({ titre: 'Armement : ' + l, detail: [n, W.arm.notes[key]].filter(Boolean).join(' — '), grav: 'mineur', photos: [], src: 'arm' }); }));
+  for (const s of W.sou) if (s.titre.trim() || s.note.trim() || s.photos.length) out.push({ titre: s.titre.trim() || 'Souci signalé', detail: s.note.trim(), grav: s.grav, photos: s.photos, src: 'souci' });
+  return out;
+}
+function wEnvoi(v) {
+  const h = v.compteur === 'h', defs = collect(v), unit = h ? 'h' : 'km';
+  const L = essList(v), essOk = L.filter(([k]) => W.ess[k] && W.ess[k].etat === 'ok').length, essNv = L.length - L.filter(([k]) => W.ess[k] && W.ess[k].etat).length;
+  const regles = Object.entries(W.anc).filter(([, s]) => s === 'regle').length, la = Object.values(W.anc).filter(s => s === 'la').length;
+  const low = (v.niveaux || []).filter(k => W.niv[k] && W.niv[k] <= 3 && !W.plein[k]);
+  let arm = 'Non vérifié aujourd’hui';
+  if (W.arm.on && FAT[v.type]) { let t = 0, o = 0, k = 0; FAT[v.type].sections.forEach((s, si) => s[1].forEach((_, ii) => { t++; const x = W.arm.it[si + '-' + ii]; if (x === 'ok') o++; if (x === 'ko') k++; })); arm = `<b>${o}</b> conformes${k ? `, <b style="color:var(--red2)">${k} manquant${k > 1 ? 's' : ''}</b>` : ''}${t - o - k ? `, ${t - o - k} non vérifiés` : ''}`; }
+  return `<div class="wz-h">Récapitulatif</div><p class="wz-sub">Vérifie puis valide ta montée en véhicule.</p>
+  <div class="card">
+    <div class="rec"><div class="k">${ico('user')}</div><div><div class="t">${esc(S.user.nom)}</div><div class="d">${[S.user.equipe ? (S.user.equipe === 'Autre' ? 'Autre équipe' : 'Équipe ' + esc(S.user.equipe)) : '', fDate(new Date()) + ' à ' + fTime(new Date())].filter(Boolean).join(' · ')}</div></div></div>
+    <div class="rec"><div class="k">${ico('gauge')}</div><div><div class="t">${W.km !== '' ? nf(+W.km) + ' ' + unit : '<span style="color:var(--amb)">Compteur non relevé</span>'}</div><div class="d">${W.hp ? 'Heures pompe <b>' + nf(+W.hp) + ' h</b> · ' : ''}${W.photoCpt ? 'photo jointe' : 'sans photo'}</div></div></div>
+    ${(v.niveaux || []).length ? `<div class="rec"><div class="k">${ico('fuel')}</div><div><div class="t">Niveaux</div><div class="d">${v.niveaux.map(k => `${esc((NIVEAUX[k] || { l: k }).l)} <b>${W.niv[k] ? W.niv[k] + '/6' : '—'}</b>`).join(' · ')}${low.length ? `<br><span style="color:var(--amb);font-weight:700">Plein à prévoir : ${low.map(k => NIVEAUX[k].l).join(', ')}</span>` : ''}</div></div></div>` : ''}
+    <div class="rec"><div class="k">${ico('tool')}</div><div><div class="t">Essais</div><div class="d"><b>${essOk}</b> OK${L.length - essOk - essNv ? `, <b style="color:var(--red2)">${L.length - essOk - essNv} défaut(s)</b>` : ''}${essNv ? `, <span style="color:var(--amb)">${essNv} non vérifié(s)</span>` : ''}</div></div></div>
+    ${FAT[v.type] ? `<div class="rec"><div class="k">${ico('box')}</div><div><div class="t">Armement</div><div class="d">${arm}</div></div></div>` : ''}
+    ${regles || la ? `<div class="rec"><div class="k">${ico('alert')}</div><div><div class="t">Défauts connus</div><div class="d">${la ? la + ' toujours présent(s)' : ''}${la && regles ? ', ' : ''}${regles ? `<b style="color:var(--grn)">${regles} réglé(s)</b>` : ''}</div></div></div>` : ''}
+  </div>
+  ${defs.length ? `<div class="sec-t"><b>Nouveaux défauts signalés</b><span class="ln"></span>${defs.length}</div>
+    <div class="list">${defs.map(d => `<div class="li g-${d.grav}"><div class="grow"><div class="lt">${esc(d.titre)}</div><div class="ls">${GRAV[d.grav]}${d.detail ? ' · ' + esc(d.detail) : ''}${d.photos.length ? ' · ' + d.photos.length + ' photo(s)' : ''}</div></div></div>`).join('')}</div>`
+    : `<div class="card" style="margin-top:14px;border-color:rgba(39,207,124,.4);text-align:center"><b style="color:#86f2bb">${ico('check', '')} Aucun nouveau souci signalé</b></div>`}`;
+}
+function wValidate(cur, v) {
+  if (cur === 'compteur') {
+    const last = ctrlsOf(v.id).find(c => c.cpt !== null);
+    if (W.km === '') return confirm('Le compteur n’est pas relevé. Continuer quand même ?');
+    if (last && +W.km < last.cpt) return confirm(`${nf(+W.km)} est inférieur au dernier relevé (${nf(last.cpt)}). C’est bien le bon chiffre ?`);
+  }
+  if (cur === 'essais') {
+    const L = essList(v), nv = L.filter(([k]) => !(W.ess[k] && W.ess[k].etat)).length;
+    if (nv) return confirm(`${nv} essai(s) non vérifié(s). Continuer ?`);
+  }
+  if (cur === 'armement' && W.arm.on === null) { toast('Choisis : vérifier l’armement ou pas d’inventaire', true); return false; }
+  return true;
+}
+function wSend() {
+  const v = veh(W.vid), now = new Date(), st = stamp(now), ym = st.slice(0, 4) + '/' + st.slice(4, 6), me = { nom: S.user.nom.trim(), equipe: S.user.equipe || '' };
+  const photos = []; let pn = 0;
+  const addPh = data => { const p = `photos/${ym}/${st}_${v.id}_${++pn}.jpg`; photos.push({ path: p, data }); return p; };
+  const defs = collect(v);
+  const openNow = openOf(v.id), stillTitles = new Set(openNow.filter(a => W.anc[a.name] !== 'regle').map(a => norm(((S.files[a.p] || {}).j || {}).titre || '')));
+  const anos = []; let an = 0, newDefs = [];
+  for (const d of defs) {
+    if (stillTitles.has(norm(d.titre)) && !d.photos.length && !d.detail) continue; // déjà connu
+    const name = `${v.id}_${st}_${++an}_${d.grav}`, path = `anomalies/ouvertes/${name}.json`;
+    const obj = { v: 1, id: name, vehicule: { id: v.id, nom: v.nom }, date: now.toISOString(), auteur: me, titre: d.titre, detail: d.detail, gravite: d.grav, origine: d.src, photos: d.photos.map(addPh), statut: 'ouvert' };
+    anos.push({ path, obj }); newDefs.push(d);
+  }
+  const resolve = Object.entries(W.anc).filter(([, s]) => s === 'regle').map(([name]) => ({ name, res: { date: now.toISOString(), par: me.nom, note: 'Constaté réglé lors de la montée en véhicule' } }));
+  const regles = resolve.map(r => ((S.files[`anomalies/ouvertes/${r.name}.json`] || {}).j || {}).titre || 'Défaut');
+  const restant = openNow.filter(a => W.anc[a.name] !== 'regle');
+  const all = restant.map(a => a.grav).concat(newDefs.map(d => d.grav));
+  const statut = all.includes('indispo') ? 'indispo' : (all.length ? 'def' : 'ok');
+  const L = essList(v), essais = {};
+  for (const [k, l] of L) { const e = W.ess[k]; essais[k] = { l, etat: (e && e.etat) || 'nv', ...(e && e.etat === 'def' ? { note: e.note || '', gravite: e.grav || 'mineur' } : {}) }; }
+  let armement = null;
+  if (FAT[v.type]) {
+    if (W.arm.on) { let c = 0, nv = 0; const man = []; FAT[v.type].sections.forEach(([n, items], si) => items.forEach(([q, l], ii) => { const x = W.arm.it[si + '-' + ii]; if (x === 'ok') c++; else if (x === 'ko') man.push({ zone: n, l, note: W.arm.notes[si + '-' + ii] || '' }); else nv++; })); armement = { fait: true, fat: v.type + ' ' + FAT[v.type].maj, conformes: c, manquants: man, nonVerifies: nv }; }
+    else armement = { fait: false };
+  }
+  const cptPhoto = W.photoCpt ? addPh(W.photoCpt) : null;
+  const cpt = W.km === '' ? 'x' : String(+W.km);
+  const path = `controles/${ym}/${st}_${v.id}_${statut}_${cpt}_${slug(me.nom)}.json`;
+  const ctrl = {
+    v: 1, vehicule: { id: v.id, nom: v.nom, type: v.type, plaque: v.plaque || '' }, date: now.toISOString(), auteur: me,
+    compteur: { unite: v.compteur === 'h' ? 'h' : 'km', valeur: W.km === '' ? null : +W.km, heuresPompe: W.hp === '' ? null : +W.hp, lu: !!W.lu, photo: cptPhoto },
+    niveaux: Object.fromEntries((v.niveaux || []).filter(k => W.niv[k]).map(k => [k, W.niv[k]])), plein: W.plein,
+    essais, armement,
+    soucis: W.sou.filter(s => s.titre.trim() || s.note.trim() || s.photos.length).map(s => ({ titre: s.titre.trim() || 'Souci signalé', gravite: s.grav, note: s.note.trim() })),
+    defautsCrees: anos.map(a => a.path), regles, defautsRestants: restant.length,
+    observation: W.obs.trim(), statut, photos: photos.filter(p => p.path !== cptPhoto).map(p => p.path), app: 'monter-vehicule 1.0'
+  };
+  const extra = W.hyg ? [{ path: `hygiene/${v.id}_${st}.json`, obj: { v: 1, vehicule: { id: v.id, nom: v.nom }, date: now.toISOString(), auteur: me, protocole: 'Hygiène n°2' }, msg: `Protocole hygiène n°2 ${v.nom}` }] : [];
+  ctrl.hygiene2 = !!W.hyg;
+  queue({ path, ctrl, photos, anos, resolve, extra });
+  S.lastDone = { v, statut, n: anos.length, regles: regles.length, km: W.km, unit: v.compteur === 'h' ? 'h' : 'km' };
+  W = null; LS.del('mv.draft');
+  go('done');
+}
+function viewDone() {
+  const d = S.lastDone || {}, v = d.v || {};
+  return `<div class="done">
+    <div class="ok">${ico('check')}</div>
+    <h2>${d.statut === 'indispo' ? 'Engin indisponible' : 'Bonne garde&nbsp;!'}</h2>
+    <p class="muted" style="font-size:17px;margin:0 0 6px">Montée du <b style="color:var(--txt)">${esc(v.nom || '')}</b> enregistrée.</p>
+    <p class="muted">${d.km ? nf(+d.km) + ' ' + d.unit + ' · ' : ''}${d.n ? d.n + ' défaut(s) signalé(s)' : 'aucun nouveau défaut'}${d.regles ? ' · ' + d.regles + ' réglé(s)' : ''}</p>
+    ${S.outbox.length ? `<p class="pill warn" style="margin-top:8px">${ico('wifi')} Envoi dès que le réseau est disponible</p>` : ''}
+    <div style="max-width:420px;margin:28px auto 0;display:grid;gap:10px">
+      <button class="btn red block" data-act="pick">${ico('truck')} Monter un autre engin</button>
+      <button class="btn block" data-act="nav" data-v="home">Retour à l’accueil</button>
+    </div>
+  </div>`;
+}
+
+/* =====================================================================
+   SCANNER DU COMPTEUR (caméra + lecture des chiffres)
+   ===================================================================== */
+const SCAN = { stream: null, field: 'km', torch: false, worker: null, workerP: null };
+function ocrWorker() {
+  if (SCAN.workerP) return SCAN.workerP;
+  SCAN.workerP = (async () => {
+    await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+    const w = await Tesseract.createWorker('eng', 1, { logger: () => {} });
+    await w.setParameters({ tessedit_char_whitelist: '0123456789', tessedit_pageseg_mode: '7', classify_bln_numeric_mode: '1' });
+    SCAN.worker = w; return w;
+  })().catch(e => { SCAN.workerP = null; throw e; });
+  return SCAN.workerP;
+}
+async function openScan(field) {
+  SCAN.field = field;
+  ocrWorker().catch(() => {});                 // chargement en avance pendant le cadrage
+  layer.innerHTML = `<div class="scan" id="scan">
+    <video id="scv" playsinline autoplay muted></video>
+    <div class="frame" id="scf"><div class="laser"></div></div>
+    <div class="tip">Cadre les chiffres du compteur<small>Tiens le téléphone bien droit, sans reflet</small></div>
+    <div class="bar"><button class="rb" data-act="scanClose">${ico('x')}</button><button class="shoot" data-act="scanShoot"><i></i></button><button class="rb" id="sct" data-act="scanTorch">${ico('flash')}</button></div>
+  </div>`;
+  try {
+    SCAN.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    const vd = $('#scv'); vd.srcObject = SCAN.stream; await vd.play().catch(() => {});
+    const tr = SCAN.stream.getVideoTracks()[0], caps = tr.getCapabilities ? tr.getCapabilities() : {};
+    if (!caps.torch) $('#sct').style.visibility = 'hidden';
+    try { if (caps.focusMode && caps.focusMode.includes('continuous')) await tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch (e) {}
+  } catch (e) {
+    closeScan();
+    pickPhoto(async (dataUrl, img) => { const c = cropCenter(img); await runOcr(c); }, true);
+  }
+}
+function closeScan() { if (SCAN.stream) SCAN.stream.getTracks().forEach(t => t.stop()); SCAN.stream = null; layer.innerHTML = ''; }
+function cropFromVideo() {
+  const vd = $('#scv'), fr = $('#scf').getBoundingClientRect(), el = vd.getBoundingClientRect();
+  const vw = vd.videoWidth, vh = vd.videoHeight; if (!vw) return null;
+  const sc = Math.max(el.width / vw, el.height / vh), ox = (el.width - vw * sc) / 2, oy = (el.height - vh * sc) / 2;
+  const sx = (fr.left - el.left - ox) / sc, sy = (fr.top - el.top - oy) / sc, sw = fr.width / sc, sh = fr.height / sc;
+  const c = document.createElement('canvas'); c.width = Math.round(sw); c.height = Math.round(sh);
+  c.getContext('2d').drawImage(vd, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return c;
+}
+function cropCenter(img) {
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  const sw = w * .86, sh = Math.min(h * .3, sw * .3), c = document.createElement('canvas');
+  c.width = Math.round(sw); c.height = Math.round(sh);
+  c.getContext('2d').drawImage(img, (w - sw) / 2, (h - sh) / 2, sw, sh, 0, 0, c.width, c.height);
+  return c;
+}
+function prepare(src, invertMode) {
+  // niveaux de gris, contraste étiré puis seuil d'Otsu, texte noir sur fond blanc
+  const H = 140, sc = H / src.height, c = document.createElement('canvas');
+  c.width = Math.round(src.width * sc); c.height = H;
+  const x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingQuality = 'high'; x.drawImage(src, 0, 0, c.width, c.height);
+  const im = x.getImageData(0, 0, c.width, c.height), d = im.data, n = c.width * c.height, g = new Uint8ClampedArray(n), hist = new Array(256).fill(0);
+  for (let i = 0; i < n; i++) { const v = (d[i * 4] * .3 + d[i * 4 + 1] * .59 + d[i * 4 + 2] * .11) | 0; g[i] = v; hist[v]++; }
+  let lo = 0, hi = 255, acc = 0; for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc > n * .02) { lo = i; break; } }
+  acc = 0; for (let i = 255; i >= 0; i--) { acc += hist[i]; if (acc > n * .02) { hi = i; break; } }
+  const rg = Math.max(1, hi - lo), h2 = new Array(256).fill(0);
+  for (let i = 0; i < n; i++) { g[i] = Math.max(0, Math.min(255, (g[i] - lo) * 255 / rg)); h2[g[i]]++; }
+  let sum = 0; for (let i = 0; i < 256; i++) sum += i * h2[i];
+  let sB = 0, wB = 0, best = 0, th = 128; for (let i = 0; i < 256; i++) { wB += h2[i]; if (!wB) continue; const wF = n - wB; if (!wF) break; sB += i * h2[i]; const mB = sB / wB, mF = (sum - sB) / wF, b = wB * wF * (mB - mF) ** 2; if (b > best) { best = b; th = i; } }
+  let dark = 0; for (let i = 0; i < n; i++) if (g[i] < th) dark++;
+  const inv = invertMode === undefined ? dark > n / 2 : invertMode;
+  for (let i = 0; i < n; i++) { let v = g[i] < th ? 0 : 255; if (inv) v = 255 - v; d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = v; d[i * 4 + 3] = 255; }
+  x.putImageData(im, 0, 0);
+  const o = document.createElement('canvas'); o.width = c.width + 40; o.height = H + 40;
+  const ox = o.getContext('2d'); ox.fillStyle = '#fff'; ox.fillRect(0, 0, o.width, o.height); ox.drawImage(c, 20, 20);
+  o.inv = inv;
+  return o;
+}
+function pickNumber(texts, last) {
+  const cands = [];
+  for (const t of texts) {
+    const groups = (t.text || '').match(/\d[\d ]*\d|\d/g) || [];
+    for (const g of groups) { const s = g.replace(/ /g, ''); if (s.length >= 2 && s.length <= 7) cands.push({ s, conf: t.conf, n: +s }); }
+  }
+  if (!cands.length) return '';
+  const score = c => { let sc = c.conf + c.s.length * 6; if (last !== null && last !== undefined) { if (c.n >= last && c.n - last < 5000) sc += 80; else if (Math.abs(c.n - last) < 20000) sc += 20; else sc -= 40; } return sc; };
+  return cands.sort((a, b) => score(b) - score(a))[0].s;
+}
+async function runOcr(crop) {
+  const thumb = crop.toDataURL('image/jpeg', .8);
+  const v = W ? veh(W.vid) : null, last = v ? (ctrlsOf(v.id).find(c => c.cpt !== null) || {}).cpt : null;
+  const isKm = SCAN.field === 'km';
+  layer.innerHTML = `<div class="scan"><div class="busy"><div><div class="spinner"></div>Lecture des chiffres…</div></div></div>`;
+  let val = '', err = '';
+  try {
+    const w = await Promise.race([ocrWorker(), sleep(25000).then(() => { throw new Error('lent'); })]);
+    const a = prepare(crop), b = prepare(crop, !a.inv);
+    const res = [];
+    for (const cv of [a, b]) { const r = await w.recognize(cv); res.push({ text: r.data.text, conf: r.data.confidence }); }
+    val = pickNumber(res, isKm ? last : null);
+  } catch (e) { err = navigator.onLine ? 'Lecture automatique indisponible.' : 'Pas de réseau pour la lecture automatique.'; }
+  layer.innerHTML = `<div class="scan"><canvas class="full" style="background:#000"></canvas><div class="res"><div class="in">
+    <img src="${thumb}" alt="">
+    <div class="small muted" style="margin-bottom:8px">${err ? esc(err) + ' Tape le chiffre ci-dessous.' : val ? 'Chiffre lu — corrige-le si besoin :' : 'Je n’ai pas réussi à lire. Tape le chiffre :'}</div>
+    <div class="odo"><input id="scanVal" inputmode="numeric" pattern="[0-9]*" value="${esc(val)}" placeholder="000000"><span>${isKm && v && v.compteur !== 'h' ? 'km' : 'h'}</span></div>
+    <div class="row" style="margin-top:14px"><button class="btn" style="flex:1" data-act="scanAgain">${ico('cam')} Reprendre</button><button class="btn grn" style="flex:1.4" data-act="scanOk" data-lu="${val ? 1 : 0}">${ico('check')} Valider</button></div>
+  </div></div></div>`;
+  SCAN.thumb = thumb;
+}
+
+/* ---------- photos ---------- */
+function pickPhoto(cb, raw) {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.setAttribute('capture', 'environment');
+  inp.onchange = async () => { const f = inp.files && inp.files[0]; if (!f) return; try { const { url, img } = await compress(f); cb(url, img); } catch (e) { toast('Photo illisible', true); } };
+  inp.click();
+}
+function compress(file, max = 1280, q = .72) {
+  return new Promise((ok, ko) => {
+    const u = URL.createObjectURL(file), img = new Image();
+    img.onload = () => { const s = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); ok({ url: c.toDataURL('image/jpeg', q), img: c }); };
+    img.onerror = ko; img.src = u;
+  });
+}
+
+/* =====================================================================
+   RÉGLAGES & ADMINISTRATION
+   ===================================================================== */
+function viewReglages() {
+  const demo = S.cfg.demo;
+  return `<div class="wz-h" style="margin-top:6px">Réglages</div>
+  <div class="card"><div class="row"><div class="lic" style="width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(229,35,44,.16);color:var(--red2)">${ico('user')}</div>
+    <div class="grow"><b>${esc(S.user.nom)}</b><div class="small muted">${S.user.equipe ? (S.user.equipe === 'Autre' ? 'Autre équipe' : 'Équipe ' + esc(S.user.equipe)) : ''}</div></div>
+    <button class="btn sm" data-act="logout">${ico('out')} Changer</button></div></div>
+  <div class="sec-t"><b>Données</b><span class="ln"></span></div>
+  <div class="list">
+    <div class="li"><div class="lic">${ico('sync')}</div><div class="grow"><div class="lt">${demo ? 'Mode démo (sur ce téléphone)' : 'Dépôt ' + esc(S.cfg.o + '/' + S.cfg.r)}</div><div class="ls">${IDX.ctrls.length} montées · ${IDX.open.length} défauts en cours${S.outbox.length ? ' · ' + S.outbox.length + ' en attente' : ''}</div></div><button class="btn sm" data-act="sync">Actualiser</button></div>
+  </div>
+  <div class="sec-t"><b>Responsable</b><span class="ln"></span>${S.admin ? '<span class="pill ok">déverrouillé</span>' : ''}</div>
+  ${S.admin ? adminPanel() : `<button class="li" data-act="adminAsk"><div class="lic">${ico('lock')}</div><div class="grow"><div class="lt">Espace responsable</div><div class="ls">Engins, activation des téléphones, export</div></div>${ico('chev', 'chev')}</button>`}
+  <p class="small muted" style="text-align:center;margin-top:26px">Montée en véhicule 1.0 · ${esc(S.conf.centre || '')}<br>FAT : SDIS 34 — GCO service opération</p>`;
+}
+function adminPanel() {
+  return `<div class="list">
+    <button class="li" data-act="admVeh"><div class="lic">${ico('truck')}</div><div class="grow"><div class="lt">Engins du centre</div><div class="ls">${vehs(true).length} engins · nom, plaque, type, niveaux</div></div>${ico('chev', 'chev')}</button>
+    <button class="li" data-act="admCentre"><div class="lic">${ico('gear')}</div><div class="grow"><div class="lt">Centre et garde</div><div class="ls">Nom, heure de relève (${p2(S.conf.releve || 7)}h), liste des pompiers, code</div></div>${ico('chev', 'chev')}</button>
+    ${S.cfg.demo ? '' : `<button class="li" data-act="admLink"><div class="lic">${ico('link')}</div><div class="grow"><div class="lt">Activer un téléphone</div><div class="ls">QR code et lien à partager aux pompiers</div></div>${ico('chev', 'chev')}</button>`}
+    <button class="li" data-act="admLabels"><div class="lic">${ico('qr')}</div><div class="grow"><div class="lt">Étiquettes QR des pochettes</div><div class="ls">Imprimer, personnage, anciens QR codes</div></div>${ico('chev', 'chev')}</button>
+    <button class="li" data-act="admExport"><div class="lic">${ico('dl')}</div><div class="grow"><div class="lt">Exporter (tableur)</div><div class="ls">Fichier CSV des montées, à ouvrir dans Excel / Sheets</div></div>${ico('chev', 'chev')}</button>
+    <button class="li" data-act="admConn"><div class="lic">${ico('key')}</div><div class="grow"><div class="lt">Connexion GitHub</div><div class="ls">${S.cfg.demo ? 'Quitter la démo et relier au vrai dépôt' : 'Changer de dépôt ou de jeton'}</div></div>${ico('chev', 'chev')}</button>
+  </div>`;
+}
+async function saveConf(newConf) {
+  const st = Store();
+  try {
+    let sha = null; const m = await st.getMeta('config.json'); if (m) sha = m.s;
+    const s = await st.putJSON('config.json', newConf, 'Réglages du centre', sha);
+    S.conf = newConf; S.confSha = s; LS.set('mv.conf', newConf); treeAdd('config.json', s); cachePut('config.json', s, newConf);
+    toast('Enregistré pour tout le centre'); return true;
+  } catch (e) { toast(e.message || 'Enregistrement impossible', true); return false; }
+}
+function admVehSheet() {
+  sheet(`<h3>Engins du centre</h3><p class="muted small" style="margin-top:0">Les changements s’appliquent à tous les téléphones.</p>
+  ${vehs(true).map(v => `<button class="li" style="margin-bottom:8px" data-act="admVehEdit" data-id="${esc(v.id)}"><div style="width:70px">${vehSvg(v.type)}</div><div class="grow"><div class="lt">${esc(v.nom)} ${v.actif === false ? '<span class="pill">masqué</span>' : ''}</div><div class="ls">${esc([TYPES[v.type], v.plaque].filter(Boolean).join(' · '))}</div></div>${ico('chev', 'chev')}</button>`).join('')}
+  <button class="btn block" data-act="admVehEdit" data-id="">${ico('plus')} Ajouter un engin</button>
+  <button class="btn ghost block" style="margin-top:6px" data-act="close">Fermer</button>`);
+}
+function admVehEdit(id) {
+  const v = id ? JSON.parse(JSON.stringify(veh(id))) : { id: '', nom: '', type: 'FPT', plaque: '', niveaux: ['gasoil'], compteur: 'km', heures: false, actif: true };
+  admVehEdit.v = v;
+  sheet(`<h3>${id ? esc(v.nom) : 'Nouvel engin'}</h3>
+  <label class="fld"><span>Nom (indicatif)</span><input class="inp" id="ve-nom" value="${esc(v.nom)}" placeholder="ex. CCF 825"></label>
+  <label class="fld"><span>Type (choisit la FAT et les essais)</span><select class="inp" id="ve-type">${Object.entries(TYPES).map(([k, l]) => `<option value="${k}" ${v.type === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+  <label class="fld"><span>Immatriculation</span><input class="inp" id="ve-pl" value="${esc(v.plaque)}" placeholder="AA-123-BB" autocapitalize="characters"></label>
+  <div class="fld"><span>Niveaux à relever</span>${Object.entries(NIVEAUX).map(([k, n]) => `<label class="check" style="margin:8px 2px"><input type="checkbox" class="ve-niv" value="${k}" ${v.niveaux.includes(k) ? 'checked' : ''}> ${n.l}</label>`).join('')}</div>
+  <label class="fld"><span>Compteur principal</span><select class="inp" id="ve-cpt"><option value="km" ${v.compteur !== 'h' ? 'selected' : ''}>Kilomètres</option><option value="h" ${v.compteur === 'h' ? 'selected' : ''}>Heures</option></select></label>
+  <label class="check" style="margin:4px 2px 12px"><input type="checkbox" id="ve-hp" ${v.heures ? 'checked' : ''}> Relever aussi les heures pompe</label>
+  <label class="check" style="margin:4px 2px 18px"><input type="checkbox" id="ve-act" ${v.actif !== false ? 'checked' : ''}> Engin affiché à l’accueil</label>
+  ${id ? `<div class="card" style="margin-bottom:14px"><div class="row"><span style="color:#f7d84a">${ico('qr')}</span><div class="grow"><b>Anciens QR codes</b><div class="small muted">${Object.values(S.conf.qrAnciens || {}).filter(x => x === id).length} associé(s) à cet engin</div></div><button class="btn sm" data-act="qrAssoc" data-id="${esc(id)}">Associer</button></div></div>` : ''}
+  <button class="btn red block" data-act="admVehSave" data-id="${esc(id)}">${ico('check')} Enregistrer</button>
+  <button class="btn ghost block" style="margin-top:6px" data-act="admVeh">Retour</button>`);
+}
+function admCentreSheet() {
+  const c = S.conf;
+  sheet(`<h3>Centre et garde</h3>
+  <label class="fld"><span>Nom du centre</span><input class="inp" id="ce-nom" value="${esc(c.centre)}"></label>
+  <label class="fld"><span>Heure de relève (début de garde)</span><select class="inp" id="ce-rel">${Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${+c.releve === h ? 'selected' : ''}>${p2(h)} h 00</option>`).join('')}</select></label>
+  <label class="fld"><span>Pompiers du centre (un par ligne, pour la saisie rapide)</span><textarea class="inp" id="ce-pomp" style="min-height:140px" placeholder="Nom Prénom">${esc((c.pompiers || []).join('\n'))}</textarea></label>
+  <label class="fld"><span>Nouveau code responsable (laisser vide pour garder l’actuel)</span><input class="inp" id="ce-pin" inputmode="numeric" type="password" placeholder="4 chiffres ou plus"></label>
+  <button class="btn red block" data-act="admCentreSave">${ico('check')} Enregistrer</button>
+  <button class="btn ghost block" style="margin-top:6px" data-act="close">Fermer</button>`);
+}
+async function admLinkSheet() {
+  const link = location.origin + location.pathname + '#activer=' + b64url(JSON.stringify({ o: S.cfg.o, r: S.cfg.r, t: S.cfg.t, b: S.cfg.b || 'main' }));
+  sheet(`<h3>Activer un téléphone</h3>
+  <p class="muted small" style="margin-top:0">Le pompier scanne ce QR code avec l’appareil photo de son téléphone (ou ouvre le lien). L’appli s’ouvre, déjà reliée au centre.</p>
+  <div class="qr" id="qrBox"><div class="spinner" style="border-color:#ddd;border-top-color:var(--red)"></div></div>
+  <button class="btn block" data-act="copyLink">${ico('link')} Copier le lien</button>
+  ${navigator.share ? `<button class="btn block" style="margin-top:8px" data-act="shareLink">${ico('send')} Envoyer par message</button>` : ''}
+  <p class="small" style="color:var(--amb);margin-top:14px">⚠️ Ce lien contient la clé d’accès au dépôt des données : ne le partage qu’avec les pompiers du centre. En cas de fuite, il suffit de révoquer le jeton sur GitHub et d’en créer un nouveau.</p>
+  <button class="btn ghost block" data-act="close">Fermer</button>`);
+  admLinkSheet.link = link;
+  try {
+    await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js');
+    const qr = qrcode(0, 'L'); qr.addData(link); qr.make();
+    $('#qrBox').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  } catch (e) { $('#qrBox').innerHTML = '<p style="color:#333;text-align:center">QR code indisponible hors ligne — copie le lien.</p>'; }
+}
+function admConnSheet() {
+  sheet(`<h3>Connexion GitHub</h3>
+  <p class="muted small" style="margin-top:0">Dépôt privé qui reçoit les montées, défauts et photos. Jeton « fine-grained » limité à ce seul dépôt, permission <b>Contents : Read and write</b>.</p>
+  <label class="fld"><span>Propriétaire</span><input class="inp" id="ac-o" value="${esc(S.cfg.o || 'galianachristian-cpu')}" autocapitalize="off"></label>
+  <label class="fld"><span>Dépôt des données</span><input class="inp" id="ac-r" value="${esc(S.cfg.r || 'monter-vehicule-data')}" autocapitalize="off"></label>
+  <label class="fld"><span>Jeton</span><input class="inp" id="ac-t" type="password" value="${esc(S.cfg.t || '')}" placeholder="github_pat_…" autocapitalize="off"></label>
+  <button class="btn red block" data-act="activate">${ico('key')} Tester et enregistrer</button>
+  ${S.cfg.demo ? `<button class="btn ghost block" style="margin-top:8px" data-act="demoReset">${ico('trash')} Effacer les données de démo</button>` : `<button class="btn ghost block" style="margin-top:8px" data-act="unlink">${ico('out')} Délier ce téléphone</button>`}
+  <button class="btn ghost block" data-act="close">Fermer</button>`);
+}
+function admExportSheet() {
+  const today = new Date(), from = new Date(Date.now() - 30 * 864e5);
+  const iso = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+  sheet(`<h3>Exporter les montées</h3>
+  <label class="fld"><span>Du</span><input class="inp" type="date" id="ex-a" value="${iso(from)}"></label>
+  <label class="fld"><span>Au</span><input class="inp" type="date" id="ex-b" value="${iso(today)}"></label>
+  <button class="btn red block" data-act="doExport">${ico('dl')} Télécharger le CSV</button>
+  <div id="exProg" class="small muted" style="text-align:center;margin-top:10px"></div>
+  <button class="btn ghost block" data-act="close">Fermer</button>`);
+}
+async function doExport() {
+  const a = new Date($('#ex-a').value + 'T00:00'), b = new Date($('#ex-b').value + 'T23:59:59');
+  const list = IDX.ctrls.filter(c => c.date >= a && c.date <= b).reverse();
+  if (!list.length) { toast('Aucune montée sur cette période', true); return; }
+  const rows = [['Date', 'Heure', 'Engin', 'Pompier', 'Équipe', 'Compteur', 'Unité', 'Heures pompe', 'Gasoil', 'Eau', 'AdBlue', 'Additif', 'Carburant', 'Essais en défaut', 'Armement', 'Soucis', 'Défauts créés', 'Défauts réglés', 'Statut', 'Observation']];
+  let i = 0;
+  for (const c of list) {
+    $('#exProg').textContent = `Préparation ${++i}/${list.length}…`;
+    let j = null; try { j = await readJSON(c.p); } catch (e) {}
+    if (!j) { rows.push([fDate(c.date), fTime(c.date), veh(c.vid).nom, c.auteur, '', c.cpt ?? '', '', '', '', '', '', '', '', '', '', '', '', '', c.st, '(détail indisponible)']); continue; }
+    const n = j.niveaux || {}, ess = Object.values(j.essais || {}).filter(e => e.etat === 'def').map(e => e.l + (e.note ? ' : ' + e.note : '')).join(' | ');
+    const arm = j.armement ? (j.armement.fait ? `${j.armement.conformes} ok, ${j.armement.manquants.length} manquants${j.armement.manquants.length ? ' (' + j.armement.manquants.map(m => m.l).join(', ') + ')' : ''}` : 'non vérifié') : '';
+    rows.push([new Date(j.date).toLocaleDateString('fr-FR'), fTime(new Date(j.date)), j.vehicule.nom, j.auteur.nom, j.auteur.equipe, j.compteur.valeur ?? '', j.compteur.unite, j.compteur.heuresPompe ?? '', n.gasoil ?? '', n.eau ?? '', n.adblue ?? '', n.additif ?? '', n.carburant ?? '', ess, arm, (j.soucis || []).map(s => s.titre + (s.note ? ' : ' + s.note : '')).join(' | '), (j.defautsCrees || []).length, (j.regles || []).join(' | '), j.statut, j.observation || '']);
+  }
+  const csv = '﻿' + rows.map(r => r.map(x => { const s = String(x ?? ''); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';')).join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const el = document.createElement('a'); el.href = url; el.download = `montees-${$('#ex-a').value}_${$('#ex-b').value}.csv`; document.body.appendChild(el); el.click(); el.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  $('#exProg').textContent = `${list.length} montées exportées`;
+}
+
+/* =====================================================================
+   QR CODES DES POCHETTES (lecture + étiquettes à imprimer)
+   ===================================================================== */
+const JSQR = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+const QRLIB = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js';
+const QRS = { stream: null, timer: null, mode: 'go', vid: null, key: null };
+const appBase = () => location.origin + location.pathname;
+function qrKey(t) { const m = String(t).match(/forms\/d\/(?:e\/)?([A-Za-z0-9_-]{10,})/); return m ? 'form:' + m[1] : String(t).trim().slice(0, 300); }
+function qrVehicle(t) {
+  const m = String(t).match(/[#&?]engin=([a-z0-9-]+)/);
+  if (m && vehs(true).some(v => v.id === m[1])) return m[1];
+  const id = (S.conf.qrAnciens || {})[qrKey(t)];
+  return id && vehs(true).some(v => v.id === id) ? id : null;
+}
+async function openQrScan(mode, vid) {
+  QRS.mode = mode; QRS.vid = vid;
+  layer.innerHTML = `<div class="scan">
+    <video id="qrv" playsinline autoplay muted></video>
+    <div class="frame sq"><div class="laser"></div></div>
+    <div class="tip" style="top:calc(30% - 86px)">${mode === 'assoc' ? 'Scanne l’ancien QR code<br>du ' + esc(veh(vid).nom) : 'Scanne le QR code de l’engin'}<small>${mode === 'assoc' ? 'Il ouvrira ensuite directement cet engin dans l’appli' : 'Celui collé sur la pochette jaune du tableau'}</small></div>
+    <div class="bar"><button class="rb" data-act="qrClose">${ico('x')}</button><span></span><span style="width:54px"></span></div>
+  </div>`;
+  let det = null;
+  if ('BarcodeDetector' in window) { try { const f = await BarcodeDetector.getSupportedFormats(); if (f.includes('qr_code')) det = new BarcodeDetector({ formats: ['qr_code'] }); } catch (e) {} }
+  if (!det) loadScript(JSQR).catch(() => {});
+  try { QRS.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false }); }
+  catch (e) { closeQr(); toast('Caméra indisponible : autorise l’appareil photo', true); return; }
+  const vd = $('#qrv'); if (!vd) { closeQr(); return; }
+  vd.srcObject = QRS.stream; await vd.play().catch(() => {});
+  const cv = document.createElement('canvas'), cx = cv.getContext('2d', { willReadFrequently: true });
+  const tick = async () => {
+    if (!QRS.stream) return;
+    let txt = null;
+    if (vd.videoWidth) {
+      try {
+        if (det) { const r = await det.detect(vd); if (r[0]) txt = r[0].rawValue; }
+        else if (window.jsQR) { const w = 720, h = Math.round(vd.videoHeight * w / vd.videoWidth); cv.width = w; cv.height = h; cx.drawImage(vd, 0, 0, w, h); const r = jsQR(cx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'dontInvert' }); if (r && r.data) txt = r.data; }
+      } catch (e) {}
+    }
+    if (txt) { onQr(txt); return; }
+    QRS.timer = setTimeout(tick, 220);
+  };
+  tick();
+}
+function closeQr() { clearTimeout(QRS.timer); if (QRS.stream) QRS.stream.getTracks().forEach(t => t.stop()); QRS.stream = null; layer.innerHTML = ''; }
+async function onQr(txt) {
+  if (navigator.vibrate) navigator.vibrate(60);
+  closeQr();
+  QRS.key = qrKey(txt);
+  if (QRS.mode === 'assoc') { ACT.qrAssocPick({ dataset: { id: QRS.vid } }); return; }
+  if (/#activer=/.test(txt)) { location.href = txt; return; }
+  const vid = qrVehicle(txt);
+  if (vid) { startWizard(vid); return; }
+  if (S.admin) {
+    sheet(`<h3>QR code inconnu</h3><p class="muted small" style="margin-top:0">Il n’est relié à aucun engin. À quel engin appartient-il ?</p>
+      <div class="list">${vehs(true).map(v => `<button class="li" data-act="qrAssocPick" data-id="${esc(v.id)}"><div style="width:64px">${vehSvg(v.type)}</div><div class="grow lt">${esc(v.nom)}</div>${ico('chev', 'chev')}</button>`).join('')}</div>
+      <button class="btn ghost block" style="margin-top:8px" data-act="close">Annuler</button>`);
+  } else toast('QR code inconnu : demande au responsable de l’associer à l’engin', true);
+}
+function openPendingEngin() {
+  const id = S.pendingEngin;
+  if (!id || !S.cfg || !S.user) return;
+  S.pendingEngin = null;
+  if (vehs(true).some(v => v.id === id)) startWizard(id);
+}
+function admLabelsSheet() {
+  const n = Object.keys(S.conf.qrAnciens || {}).length;
+  sheet(`<h3>Étiquettes QR des pochettes</h3>
+  <p class="muted small" style="margin-top:0">Chaque étiquette ouvre directement la montée de son engin, avec l’appareil photo du téléphone ou depuis l’appli. Format 6 × 9 cm, pour les pochettes jaunes.</p>
+  <div class="card" style="margin-bottom:10px"><div class="row"><div id="persoPrev" style="width:64px;height:64px;border-radius:12px;background:#fff;display:grid;place-items:center;overflow:hidden;flex:none">${S.conf.personnage ? '' : `<span style="color:#999">${ico('user')}</span>`}</div>
+    <div class="grow"><b>Personnage</b><div class="small muted">${S.conf.personnage ? 'Imprimé sur chaque étiquette' : 'Ajoute ton personnage (image « personnage vierge »)'}</div></div></div>
+    <div class="row" style="margin-top:10px"><button class="btn sm" style="flex:1" data-act="persoPick">${ico('photo')} ${S.conf.personnage ? 'Changer' : 'Choisir l’image'}</button>${S.conf.personnage ? `<button class="btn sm ghost" data-act="persoDel">${ico('trash')}</button>` : ''}</div></div>
+  <button class="btn red block" data-act="printLabels">${ico('print')} Imprimer les étiquettes (${vehs().length})</button>
+  <div class="card" style="margin-top:12px"><b>Tes anciens QR codes</b><div class="small muted" style="margin:4px 0 10px">Ceux qui ouvrent les formulaires Google restent utilisables <b>depuis l’appli</b> (bouton « Scanner le QR code ») une fois associés : ${n} associé(s). Pour en associer un : Engins du centre → l’engin → Associer.</div>
+  ${vehs(true).map(v => { const k = Object.values(S.conf.qrAnciens || {}).filter(x => x === v.id).length; return `<div class="row small" style="padding:6px 0;border-top:1px solid var(--line)"><span class="grow">${esc(v.nom)}</span>${k ? `<span class="pill ok">${ico('check')} associé</span>` : `<button class="btn sm" data-act="qrAssoc" data-id="${esc(v.id)}">Associer</button>`}</div>`; }).join('')}</div>
+  <button class="btn ghost block" style="margin-top:8px" data-act="close">Fermer</button>`);
+  if (S.conf.personnage) imageUrl(S.conf.personnage).then(u => { const b = $('#persoPrev'); if (b) b.innerHTML = `<img src="${u}" style="width:100%;height:100%;object-fit:contain">`; }).catch(() => {});
+}
+async function toDataUrl(u) { if (u.startsWith('data:')) return u; const b = await (await fetch(u)).blob(); return new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); }
+async function printLabels() {
+  const w = window.open('', '_blank');
+  if (!w) { toast('Autorise l’ouverture des fenêtres pour imprimer', true); return; }
+  w.document.write('<p style="font:16px sans-serif;padding:20px">Préparation des étiquettes…</p>');
+  try { await loadScript(QRLIB); } catch (e) { w.close(); toast('Réseau nécessaire pour créer les QR codes', true); return; }
+  let perso = '';
+  if (S.conf.personnage) { try { perso = await toDataUrl(await imageUrl(S.conf.personnage)); } catch (e) {} }
+  const defs = document.querySelector('svg defs').outerHTML;
+  const cards = vehs().map(v => {
+    const qr = qrcode(0, 'M'); qr.addData(appBase() + '#engin=' + v.id); qr.make();
+    return `<div class="lab">
+      <div class="hd">${EMBLEM.replace('class="emb"', 'class="em"')}<div><b>MONTÉE EN VÉHICULE</b><span>${esc(S.conf.centre || 'CS Cruzy / Quarante')}</span></div></div>
+      <div class="ill">${perso ? `<img src="${perso}">` : vehSvg(v.type)}</div>
+      <div class="qr">${qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true })}</div>
+      <div class="nm">${esc(v.nom)}</div>
+      <div class="ft">Scanne-moi à la prise de garde</div></div>`;
+  }).join('');
+  w.document.open();
+  w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Étiquettes QR — ${esc(S.conf.centre || '')}</title>
+  <style>
+    @page{size:A4;margin:10mm}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bar{padding:12px;text-align:center;font-size:14px;background:#f3f3f3}
+    .bar button{font-size:16px;padding:10px 18px;border-radius:10px;border:0;background:#e5232c;color:#fff;font-weight:700}
+    .grid{display:flex;flex-wrap:wrap;gap:4mm;padding:4mm;justify-content:flex-start}
+    .lab{width:60mm;height:90mm;border:0.3mm dashed #999;border-radius:4mm;overflow:hidden;display:flex;flex-direction:column;align-items:center;break-inside:avoid;page-break-inside:avoid;background:#fff}
+    .hd{width:100%;display:flex;align-items:center;gap:2mm;padding:2mm 3mm;background:#c8141c;color:#fff}
+    .hd .em{width:8mm;height:8mm}
+    .hd b{display:block;font-size:3.3mm;letter-spacing:.2mm}
+    .hd span{display:block;font-size:2.5mm;opacity:.9}
+    .ill{height:24mm;width:100%;display:flex;align-items:center;justify-content:center;padding:1mm 3mm}
+    .ill img{max-height:100%;max-width:100%;object-fit:contain}
+    .ill svg{height:100%;width:auto}
+    .qr{width:36mm;height:36mm}
+    .qr svg{width:100%;height:100%}
+    .nm{margin-top:2.5mm;width:50mm;text-align:center;background:#f7d84a;border:0.3mm solid #c9a400;font-weight:900;font-size:6mm;padding:1mm 0}
+    .ft{font-size:2.6mm;color:#555;margin-top:1.5mm}
+    @media print{.bar{display:none}}
+  </style></head><body>
+  <svg width="0" height="0" style="position:absolute">${defs}</svg>
+  <div class="bar">Découpe les étiquettes le long des pointillés et glisse-les dans les pochettes. <button onclick="print()">Imprimer</button></div>
+  <div class="grid">${cards}</div>
+  <script>setTimeout(function(){print()},600)<\/script></body></html>`);
+  w.document.close();
+}
+
+/* =====================================================================
+   ÉVÉNEMENTS
+   ===================================================================== */
+const ACT = {
+  close: closeSheet,
+  nav: el => { closeSheet(); go(el.dataset.v); },
+  sync: () => sync(),
+  flush: () => flush(),
+  veh: el => { closeSheet(); go('veh', el.dataset.id); },
+  pick: () => pickSheet(),
+  start: el => startWizard(el.dataset.id),
+  ctrl: el => openCtrl(el.dataset.p),
+  ano: el => openAno(el.dataset.p),
+  zoom: el => { if (!el.src) return; const z = document.createElement('div'); z.className = 'zoom'; z.innerHTML = `<img src="${el.src}">`; z.onclick = () => z.remove(); document.body.appendChild(z); },
+  filt: el => { S.filt = el.dataset.id; render(); },
+  anoTab: el => { S.anoTab = el.dataset.t; render(); },
+  fatView: el => fatSheet(el.dataset.t),
+  async anoResolve(el) {
+    const name = el.dataset.p.match(RX_ANO)[2], note = ($('#res-note') || {}).value || '';
+    queue({ photos: [], anos: [], resolve: [{ name, res: { date: new Date().toISOString(), par: S.user.nom, note: note.trim() } }] });
+    closeSheet(); toast('Défaut marqué comme réglé'); render();
+  },
+  anoNew: el => anoNewSheet(el.dataset.id),
+  anQuick: el => { $('#an-t').value = el.dataset.q; },
+  anGrav: el => { anoNewSheet.D.grav = el.dataset.g; anoNewSheet.draw(); },
+  anPh: () => pickPhoto(u => { anoNewSheet.D.vid = $('#an-v').value; anoNewSheet.D.titre = $('#an-t').value; anoNewSheet.D.note = $('#an-n').value; anoNewSheet.D.photos.push(u); anoNewSheet.draw(); }),
+  anPhDel: el => { anoNewSheet.D.photos.splice(+el.dataset.i, 1); anoNewSheet.draw(); },
+  anSend() {
+    const D = anoNewSheet.D; D.vid = $('#an-v').value; D.titre = $('#an-t').value.trim(); D.note = $('#an-n').value.trim();
+    if (!D.titre) { toast('Indique le problème', true); return; }
+    const v = veh(D.vid), now = new Date(), st = stamp(now), ym = st.slice(0, 4) + '/' + st.slice(4, 6), name = `${v.id}_${st}_1_${D.grav}`;
+    const photos = D.photos.map((data, i) => ({ path: `photos/${ym}/${st}_${v.id}_d${i + 1}.jpg`, data }));
+    const obj = { v: 1, id: name, vehicule: { id: v.id, nom: v.nom }, date: now.toISOString(), auteur: { nom: S.user.nom, equipe: S.user.equipe || '' }, titre: D.titre, detail: D.note, gravite: D.grav, origine: 'signalement', photos: photos.map(p => p.path), statut: 'ouvert' };
+    queue({ photos, anos: [{ path: `anomalies/ouvertes/${name}.json`, obj }], resolve: [] });
+    closeSheet(); toast('Défaut signalé'); render();
+  },
+
+  // connexion
+  lgeq: el => { document.querySelectorAll('#lg-eq button').forEach(b => b.classList.toggle('on', b === el)); document.querySelectorAll('#lg-eq button').forEach(b => b.classList.toggle('def', b === el)); ACT.lgeq.v = el.dataset.e; },
+  login() {
+    const nom = $('#lg-nom').value.trim().replace(/\s+/g, ' ');
+    if (nom.length < 2) { toast('Indique ton nom', true); return; }
+    const sel = document.querySelector('#lg-eq button.on');
+    S.user = { nom, equipe: sel ? sel.dataset.e : '' };
+    LS.set('mv.user', S.user); LS.set('mv.lastNom', nom); LS.set('mv.lastEq', S.user.equipe);
+    go('home'); sync(true); openPendingEngin();
+  },
+  logout() { if (W && !confirm('Une montée est en cours, elle sera abandonnée. Continuer ?')) return; W = null; LS.del('mv.draft'); S.user = null; LS.del('mv.user'); S.admin = false; render(); },
+  async activate() {
+    const o = $('#ac-o').value.trim(), r = $('#ac-r').value.trim(), t = $('#ac-t').value.trim();
+    if (!o || !r || !t) { toast('Renseigne les 3 champs', true); return; }
+    const old = S.cfg; S.cfg = { o, r, t };
+    try { S.cfg.b = await GH.test(); }
+    catch (e) { S.cfg = old; toast(e.message, true); return; }
+    LS.set('mv.cfg', S.cfg); S.tree = []; S.files = {}; LS.set('mv.tree', []); LS.set('mv.files', {}); S.confSha = null; reindex();
+    closeSheet(); toast('Téléphone relié au centre'); render(); sync(); openPendingEngin();
+  },
+  demo() { S.cfg = { demo: true }; LS.set('mv.cfg', S.cfg); S.tree = []; reindex(); render(); sync(true); openPendingEngin(); },
+  demoReset() { if (!confirm('Effacer toutes les données de démo ?')) return; LS.del('mv.demo'); S.tree = []; S.files = {}; LS.set('mv.files', {}); S.outbox = []; LS.set('mv.outbox', []); reindex(); closeSheet(); sync(true); },
+  unlink() { if (!confirm('Délier ce téléphone ? Il faudra le réactiver avec le QR code.')) return; ['mv.cfg', 'mv.tree', 'mv.files'].forEach(LS.del); S.cfg = null; S.tree = []; S.files = {}; reindex(); closeSheet(); render(); },
+
+  // assistant
+  wQuit() { if (confirm('Quitter la montée ? Elle reste gardée en brouillon quelques heures.')) { saveDraft(); go('home'); } },
+  wPrev() { W.step = Math.max(0, W.step - 1); saveDraft(); window.scrollTo(0, 0); render(); },
+  wNext() { const v = veh(W.vid), st = wSteps(); if (!wValidate(st[W.step], v)) return; W.step++; saveDraft(); window.scrollTo(0, 0); render(); },
+  wSend() { wSend(); },
+  anc: el => { W.anc[el.dataset.n] = el.dataset.s; saveDraft(); render(); },
+  scan: el => openScan(el.dataset.f),
+  scanClose: closeScan,
+  scanShoot() { const c = cropFromVideo(); if (!c) return; closeScan(); SCAN.fullThumb = null; runOcr(c); },
+  async scanTorch() { const tr = SCAN.stream && SCAN.stream.getVideoTracks()[0]; if (!tr) return; SCAN.torch = !SCAN.torch; try { await tr.applyConstraints({ advanced: [{ torch: SCAN.torch }] }); $('#sct').classList.toggle('on', SCAN.torch); } catch (e) { toast('Lampe indisponible', true); } },
+  scanAgain() { layer.innerHTML = ''; openScan(SCAN.field); },
+  scanOk(el) {
+    const val = $('#scanVal').value.replace(/\D/g, '');
+    if (SCAN.field === 'km') { W.km = val; W.lu = el.dataset.lu === '1' && !!val; W.photoCpt = SCAN.thumb; } else W.hp = val;
+    layer.innerHTML = ''; saveDraft(); render();
+  },
+  cptDel() { W.photoCpt = null; W.lu = false; saveDraft(); render(); },
+  lvl: el => { const k = el.dataset.k, n = +el.dataset.n; W.niv[k] = n; if (n === 6) W.plein[k] = false; saveDraft(); render(); },
+  plein: el => { const k = el.dataset.k; W.plein[k] = !W.plein[k]; if (W.plein[k]) W.niv[k] = W.niv[k] || 6; saveDraft(); render(); },
+  ess: el => { const k = el.dataset.k, s = el.dataset.s; W.ess[k] = W.ess[k] || { photos: [] }; W.ess[k].etat = W.ess[k].etat === s ? null : s; if (!W.ess[k].grav) W.ess[k].grav = 'mineur'; saveDraft(); render(); },
+  essAll() { essList(veh(W.vid)).forEach(([k]) => { if (!W.ess[k] || !W.ess[k].etat) W.ess[k] = Object.assign(W.ess[k] || { photos: [] }, { etat: 'ok' }); }); saveDraft(); render(); },
+  essGrav: el => { W.ess[el.dataset.k].grav = el.dataset.g; saveDraft(); render(); },
+  essPh: el => pickPhoto(u => { const e = W.ess[el.dataset.k]; (e.photos = e.photos || []).push(u); saveDraft(); render(); }),
+  essPhDel: el => { W.ess[el.dataset.k].photos.splice(+el.dataset.j, 1); saveDraft(); render(); },
+  armOn() { W.arm.on = true; W.arm.open = 0; saveDraft(); render(); },
+  armOff() { W.arm.on = false; saveDraft(); render(); },
+  armOpen: el => { const s = +el.dataset.s; W.arm.open = W.arm.open === s ? -1 : s; saveDraft(); render(); },
+  armSec: el => { const si = +el.dataset.s; FAT[veh(W.vid).type].sections[si][1].forEach((_, ii) => { const k = si + '-' + ii; if (!W.arm.it[k]) W.arm.it[k] = 'ok'; }); const n = FAT[veh(W.vid).type].sections.length; W.arm.open = si + 1 < n ? si + 1 : -1; saveDraft(); render(); },
+  armIt: el => { const k = el.dataset.k, s = el.dataset.s; W.arm.it[k] = W.arm.it[k] === s ? undefined : s; saveDraft(); render(); },
+  souAdd() { W.sou.push({ titre: '', grav: 'mineur', note: '', photos: [] }); saveDraft(); render(); },
+  souDel: el => { W.sou.splice(+el.dataset.i, 1); saveDraft(); render(); },
+  souQ: el => { W.sou[+el.dataset.i].titre = el.dataset.q; saveDraft(); render(); },
+  souGrav: el => { W.sou[+el.dataset.i].grav = el.dataset.g; saveDraft(); render(); },
+  souPh: el => pickPhoto(u => { W.sou[+el.dataset.i].photos.push(u); saveDraft(); render(); }),
+  souPhDel: el => { W.sou[+el.dataset.i].photos.splice(+el.dataset.j, 1); saveDraft(); render(); },
+
+  // responsable
+  adminAsk() {
+    sheet(`<h3>Espace responsable</h3><p class="muted small" style="margin-top:0">${S.conf.pin ? 'Entre le code responsable.' : 'Aucun code n’est encore défini : choisis-en un (4 chiffres ou plus).'}</p>
+      <input class="inp" id="pin" type="password" inputmode="numeric" placeholder="Code" style="font-size:24px;text-align:center;letter-spacing:.3em">
+      <button class="btn red block" style="margin-top:12px" data-act="adminOk">${ico('lock')} ${S.conf.pin ? 'Déverrouiller' : 'Définir le code'}</button>`);
+    setTimeout(() => $('#pin') && $('#pin').focus(), 200);
+  },
+  async adminOk() {
+    const pin = $('#pin').value.trim(); if (pin.length < 4) { toast('4 chiffres minimum', true); return; }
+    const h = await sha256('mv:' + pin);
+    if (!S.conf.pin) { const c = Object.assign({}, S.conf, { pin: h }); if (!await saveConf(c)) return; }
+    else if (h !== S.conf.pin) { toast('Code incorrect', true); return; }
+    S.admin = true; closeSheet(); render();
+  },
+  admVeh: admVehSheet,
+  admVehEdit: el => admVehEdit(el.dataset.id),
+  async admVehSave(el) {
+    const id = el.dataset.id, v = admVehEdit.v;
+    v.nom = $('#ve-nom').value.trim(); v.type = $('#ve-type').value; v.plaque = $('#ve-pl').value.trim().toUpperCase();
+    v.niveaux = [...document.querySelectorAll('.ve-niv:checked')].map(x => x.value); v.compteur = $('#ve-cpt').value; v.heures = $('#ve-hp').checked; v.actif = $('#ve-act').checked;
+    if (!v.nom) { toast('Donne un nom à l’engin', true); return; }
+    const list = JSON.parse(JSON.stringify(S.conf.vehicules || []));
+    if (id) list[list.findIndex(x => x.id === id)] = v;
+    else { let nid = slug(v.nom), k = 2; while (list.some(x => x.id === nid)) nid = slug(v.nom) + '-' + k++; v.id = nid; list.push(v); }
+    if (await saveConf(Object.assign({}, S.conf, { vehicules: list }))) { admVehSheet(); render(); }
+  },
+  admCentre: admCentreSheet,
+  async admCentreSave() {
+    const c = Object.assign({}, S.conf, { centre: $('#ce-nom').value.trim() || 'CS Cruzy / Quarante', releve: +$('#ce-rel').value, pompiers: $('#ce-pomp').value.split('\n').map(s => s.trim()).filter(Boolean) });
+    const pin = $('#ce-pin').value.trim();
+    if (pin) { if (pin.length < 4) { toast('4 chiffres minimum', true); return; } c.pin = await sha256('mv:' + pin); }
+    if (await saveConf(c)) { closeSheet(); render(); }
+  },
+  admLink: admLinkSheet,
+  async copyLink() { try { await navigator.clipboard.writeText(admLinkSheet.link); toast('Lien copié'); } catch (e) { prompt('Copie ce lien :', admLinkSheet.link); } },
+  shareLink() { navigator.share({ title: 'Montée en véhicule', text: 'Active l’appli de montée en véhicule du CS Cruzy / Quarante :', url: admLinkSheet.link }).catch(() => {}); },
+  admExport: admExportSheet,
+  admLabels: admLabelsSheet,
+  printLabels: () => printLabels(),
+  persoPick() {
+    pickPhoto(async url => {
+      const p = `assets/personnage-${stamp(new Date())}.jpg`;
+      try { await Store().putImage(p, url, 'Personnage des étiquettes'); treeAdd(p, 'img'); }
+      catch (e) { toast(e.message || 'Envoi impossible', true); return; }
+      if (await saveConf(Object.assign({}, S.conf, { personnage: p }))) admLabelsSheet();
+    });
+  },
+  persoDel: async () => { if (await saveConf(Object.assign({}, S.conf, { personnage: '' }))) admLabelsSheet(); },
+  qrScan: () => { closeSheet(); openQrScan('go'); },
+  qrClose: () => closeQr(),
+  qrAssoc: el => { closeSheet(); openQrScan('assoc', el.dataset.id); },
+  async qrAssocPick(el) {
+    const map = Object.assign({}, S.conf.qrAnciens || {}); map[QRS.key] = el.dataset.id;
+    if (await saveConf(Object.assign({}, S.conf, { qrAnciens: map }))) { closeSheet(); toast(`QR code associé au ${veh(el.dataset.id).nom}`); }
+  },
+  hygT() { W.hyg = !W.hyg; saveDraft(); render(); },
+  doExport: () => doExport(),
+  admConn: admConnSheet
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const f = ACT[el.dataset.act]; if (f) { e.preventDefault(); f(el, e); }
+});
+document.addEventListener('input', e => {
+  const el = e.target; if (!el.dataset || !el.dataset.in || !W) return;
+  const k = el.dataset.in;
+  if (k === 'km' || k === 'hp') {
+    const v = el.value.replace(/\D/g, '').slice(0, 7); if (v !== el.value) el.value = v; W[k] = v;
+    if (k === 'km') { W.lu = false; const hEl = $('#kmHint'); if (hEl) hEl.innerHTML = cptHint(veh(W.vid)); }
+  }
+  else if (k === 'essNote') W.ess[el.dataset.k].note = el.value;
+  else if (k === 'armNote') W.arm.notes[el.dataset.k] = el.value;
+  else if (k === 'souT') W.sou[+el.dataset.i].titre = el.value;
+  else if (k === 'souN') W.sou[+el.dataset.i].note = el.value;
+  else if (k === 'obs') W.obs = el.value;
+  clearTimeout(document._dt); document._dt = setTimeout(saveDraft, 400);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'lg-nom') ACT.login(); if (e.key === 'Enter' && e.target.id === 'pin') ACT.adminOk(); });
+window.addEventListener('online', () => { S.online = true; sync(true); });
+window.addEventListener('offline', () => { S.online = false; paintSync(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.cfg && S.user) sync(true); });
+
+/* ---------- activation par lien / QR code ---------- */
+(function activationFromHash() {
+  const me = location.hash.match(/engin=([a-z0-9-]+)/);
+  if (me) S.pendingEngin = me[1];
+  const m = location.hash.match(/activer=([A-Za-z0-9_-]+)/);
+  if (!m) { if (me) history.replaceState(null, '', location.pathname + location.search); return; }
+  try {
+    const c = JSON.parse(unb64url(m[1]));
+    if (c.o && c.r && c.t) { S.cfg = { o: c.o, r: c.r, t: c.t, b: c.b || 'main' }; LS.set('mv.cfg', S.cfg); S.tree = []; S.files = {}; LS.set('mv.tree', []); LS.set('mv.files', {}); reindex(); setTimeout(() => toast('Téléphone relié au centre ✔'), 300); }
+  } catch (e) { setTimeout(() => toast('Lien d’activation invalide', true), 300); }
+  history.replaceState(null, '', location.pathname + location.search);
+})();
+
+if (W && S.user) S.view = 'home';
+render();
+openPendingEngin();
+if (S.cfg) sync(true);
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
