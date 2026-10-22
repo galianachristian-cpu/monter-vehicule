@@ -1486,7 +1486,7 @@ async function saveConf(newConf) {
     let sha = null; const m = await st.getMeta('config.json'); if (m) sha = m.s;
     const s = await st.putJSON('config.json', newConf, 'Réglages du centre', sha);
     S.conf = newConf; S.confSha = s; LS.set('mv.conf', newConf); treeAdd('config.json', s); cachePut('config.json', s, newConf);
-    toast('Enregistré pour tout le centre'); return true;
+    toast('Enregistré pour tout le centre'); render(); return true;
   } catch (e) { toast(e.message || 'Enregistrement impossible', true); return false; }
 }
 function admVehSheet() {
