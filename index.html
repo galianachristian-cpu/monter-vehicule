@@ -326,7 +326,9 @@ code.tok{display:block;word-break:break-all;font-size:12px;background:#0e1117;bo
 .sugg .gr{margin-left:auto;font-size:12px;color:var(--mut);font-weight:700}
 .prow{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #1d222d}
 .prow:last-child{border-bottom:0}
-.prow .gr{font-size:12px;font-weight:700;color:var(--mut);background:var(--panel2);padding:3px 8px;border-radius:99px}
+.prow .gr,.cp{font-size:12px;font-weight:700;color:var(--mut);background:var(--panel2);padding:3px 8px;border-radius:99px;white-space:nowrap}
+.cp.fdf{color:#ffc078;background:rgba(255,138,31,.14)}
+.cps{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
 .vedit{padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px}
 </style>
 </head>
@@ -848,15 +850,19 @@ function nomPropre(t) {
   return n;
 }
 function pompiers() {
-  return (S.conf.pompiers || []).map(p => typeof p === 'string' ? { nom: p, grade: '' } : p).filter(p => p && p.nom)
+  return (S.conf.pompiers || []).map(p => typeof p === 'string' ? { nom: p, grade: '', fdf: '', comp: [] } : Object.assign({ grade: '', fdf: '', comp: [] }, p)).filter(p => p && p.nom)
     .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
 }
+const FDF = ['FDF 1', 'FDF 2', 'FDF 3', 'FDF 4'];
+const normFdf = t => { const m = String(t || '').match(/^\s*FDF\s*([1-5])\s*$/i); return m ? 'FDF ' + m[1] : ''; };
+const compList = t => String(t || '').split(/[,/+]|\s{2,}/).map(x => x.trim().toUpperCase().replace(/^([A-Z]+)\s*(\d)$/, '$1 $2')).filter(x => x && x.length <= 12);
+function compChips(p) { return (p.fdf ? `<span class="cp fdf">${esc(p.fdf)}</span>` : '') + (p.comp || []).map(c => `<span class="cp">${esc(c)}</span>`).join(''); }
 function suggHtml(q) {
   const k = q && q.trim() ? norm(q) : '', L = pompiers();
   const r = (k ? L.filter(p => norm(p.nom).includes(k)) : L).slice(0, k ? 8 : 60);
   if (!L.length) return '';
   if (!r.length) return `<div class="small muted" style="margin:8px 2px 0">Pas dans la liste : ton nom sera ajouté tel que tapé.</div>`;
-  return r.map(p => `<button data-act="lgPick" data-n="${esc(p.nom)}" class="${p.nom === q ? 'on' : ''}">${ico('user')}<span>${esc(p.nom)}</span>${p.grade ? `<span class="gr">${esc(p.grade)}</span>` : ''}</button>`).join('');
+  return r.map(p => `<button data-act="lgPick" data-n="${esc(p.nom)}" class="${p.nom === q ? 'on' : ''}">${ico('user')}<span>${esc(p.nom)}</span><span class="gr">${esc([p.grade, p.fdf].filter(Boolean).join(' · '))}</span></button>`).join('');
 }
 function viewLogin() {
   const known = new Set(pompiers().map(p => p.nom));
@@ -1065,7 +1071,7 @@ async function openCtrl(p) {
   const lv = Object.entries(c.niveaux || {});
   sheet(`
     <div class="row"><div style="width:110px">${vehSvg(v.type)}</div><div class="grow"><h3 style="margin:0">${esc(c.vehicule.nom)}</h3><div class="muted small">${esc(fDay(d))} · ${fTime(d)}</div></div></div>
-    <div class="rec"><div class="k">${ico('user')}</div><div><div class="t">${esc(c.auteur.nom)}</div><div class="d">${c.auteur.equipe ? 'Équipe ' + esc(c.auteur.equipe) : ''}</div></div></div>
+    <div class="rec"><div class="k">${ico('user')}</div><div><div class="t">${esc(c.auteur.nom)}</div><div class="d">${esc([c.auteur.grade, c.auteur.equipe ? 'Équipe ' + c.auteur.equipe : ''].filter(Boolean).join(' · '))}</div>${c.auteur.fdf || (c.auteur.comp || []).length ? `<div class="cps">${compChips(c.auteur)}</div>` : ''}</div></div>
     <div class="rec"><div class="k">${ico('gauge')}</div><div class="grow"><div class="t">${c.compteur.valeur !== null && c.compteur.valeur !== undefined ? nf(c.compteur.valeur) + ' ' + unit : 'Compteur non relevé'}</div>
       <div class="d">${c.compteur.heuresPompe ? 'Heures pompe : <b>' + nf(c.compteur.heuresPompe) + ' h</b> · ' : ''}${c.compteur.lu ? 'lu par le scanner' : 'saisi à la main'}</div>
       ${c.compteur.photo ? `<div class="gal" style="grid-template-columns:1fr"><img data-src="${esc(c.compteur.photo)}" data-act="zoom" style="aspect-ratio:4/1" alt=""></div>` : ''}</div></div>
@@ -1269,7 +1275,7 @@ function wValidate(cur, v) {
   return true;
 }
 function wSend() {
-  const v = veh(W.vid), now = new Date(), st = stamp(now), ym = st.slice(0, 4) + '/' + st.slice(4, 6), me = { nom: S.user.nom.trim(), equipe: S.user.equipe || '' };
+  const v = veh(W.vid), now = new Date(), st = stamp(now), ym = st.slice(0, 4) + '/' + st.slice(4, 6), me = { nom: S.user.nom.trim(), equipe: S.user.equipe || '', grade: S.user.grade || '', fdf: S.user.fdf || '', comp: S.user.comp || [] };
   const photos = []; let pn = 0;
   const addPh = data => { const p = `photos/${ym}/${st}_${v.id}_${++pn}.jpg`; photos.push({ path: p, data }); return p; };
   const defs = collect(v);
@@ -1516,21 +1522,38 @@ function admCentreSheet() {
 function pompRows(q) {
   const k = q && q.trim() ? norm(q) : '', L = pompiers().filter(p => !k || norm(p.nom).includes(k));
   if (!L.length) return `<div class="small muted" style="padding:10px 4px">${pompiers().length ? 'Aucun nom ne correspond.' : 'Aucun pompier pour l’instant : ajoute-les un par un ou importe une liste.'}</div>`;
-  return L.map(p => `<div class="prow"><span class="grow" style="font-weight:600">${esc(p.nom)}</span>${p.grade ? `<span class="gr">${esc(p.grade)}</span>` : ''}<button class="btn sm ghost" style="min-height:36px;padding:0 10px" data-act="ppDel" data-n="${esc(p.nom)}" aria-label="Supprimer">${ico('trash')}</button></div>`).join('');
+  return L.map(p => `<div class="prow"><button class="grow" style="text-align:left;min-width:0" data-act="ppEdit" data-n="${esc(p.nom)}"><span style="font-weight:600">${esc(p.nom)}</span>${p.grade ? ` <span class="gr">${esc(p.grade)}</span>` : ''}${p.fdf || (p.comp || []).length ? `<span class="cps">${compChips(p)}</span>` : ''}</button><button class="btn sm ghost" style="min-height:36px;padding:0 10px" data-act="ppDel" data-n="${esc(p.nom)}" aria-label="Supprimer">${ico('trash')}</button></div>`).join('');
 }
 function admPompSheet() {
   sheet(`<h3>Pompiers du centre</h3>
   <p class="muted small" style="margin-top:0">${pompiers().length} dans la liste. Elle est proposée à la connexion sur tous les téléphones.</p>
   <div class="card" style="margin-bottom:12px"><b>Ajouter un pompier</b>
     <div class="row" style="margin-top:10px;align-items:stretch"><input class="inp" id="pp-nom" placeholder="Nom Prénom" style="flex:2"><input class="inp" id="pp-gr" placeholder="Grade" style="flex:1;min-width:0" autocapitalize="characters"></div>
+    ${fdfSeg('')}
+    <input class="inp" id="pp-comp" placeholder="Autres compétences (ex. COD 2, SAP 1)" style="margin-top:10px" autocapitalize="characters">
     <button class="btn red block" style="margin-top:10px" data-act="ppAdd">${ico('plus')} Ajouter</button></div>
   <input class="inp" id="pp-q" placeholder="Rechercher dans la liste…" autocomplete="off">
   <div class="card" style="margin-top:8px;padding:4px 12px;max-height:46vh;overflow:auto" id="pp-list">${pompRows('')}</div>
   <details class="card" style="margin-top:12px"><summary style="font-weight:700;cursor:pointer">Importer une liste (copier-coller)</summary>
-    <p class="small muted">Copie les colonnes « Nom-Prénom » et « Grade » de ton planning (onglet Donnée) et colle-les ici : un pompier par ligne. Les doublons sont ignorés.</p>
-    <textarea class="inp" id="pp-imp" style="min-height:140px" placeholder="Affre - Nathan&#9;CAP&#10;Azema - Fabien&#9;C/C"></textarea>
+    <p class="small muted">Copie les colonnes de ton planning (onglet Donnée) : Nom-Prénom, Grade, FDF et autres compétences (COD…), puis colle-les ici, un pompier par ligne. Les téléphones sont ignorés. Un pompier déjà présent est mis à jour avec ses compétences.</p>
+    <textarea class="inp" id="pp-imp" style="min-height:140px" placeholder="Affre - Nathan&#9;CAP&#9;FDF 1&#10;Azema - Fabien&#9;C/C&#9;FDF 1&#9;COD 2"></textarea>
     <button class="btn block" style="margin-top:10px" data-act="ppImport">${ico('dl')} Ajouter ces pompiers</button></details>
   <button class="btn ghost block" style="margin-top:8px" data-act="close">Fermer</button>`);
+}
+function fdfSeg(cur) {
+  return `<div class="seg" id="pp-fdf" style="margin-top:10px">${[''].concat(FDF.slice(0, 3)).map(f => `<button data-act="ppFdf" data-f="${f}" class="${cur === f ? 'on def' : ''}">${f || 'Aucun'}</button>`).join('')}</div>`;
+}
+function fdfVal() { const b = document.querySelector('#pp-fdf button.on'); return b ? b.dataset.f : ''; }
+function ppEditSheet(n) {
+  const p = pompiers().find(x => x.nom === n); if (!p) return admPompSheet();
+  sheet(`<h3>${esc(p.nom)}</h3>
+  <label class="fld"><span>Nom et prénom</span><input class="inp" id="pe-nom" value="${esc(p.nom)}"></label>
+  <label class="fld"><span>Grade</span><input class="inp" id="pp-gr" value="${esc(p.grade)}" autocapitalize="characters"></label>
+  <div class="fld"><span>Feux de forêts</span>${fdfSeg(p.fdf)}</div>
+  <label class="fld"><span>Autres compétences (séparées par des virgules)</span><input class="inp" id="pp-comp" value="${esc((p.comp || []).join(', '))}" placeholder="ex. COD 2, SAP 1" autocapitalize="characters"></label>
+  <button class="btn red block" data-act="ppSave" data-n="${esc(p.nom)}">${ico('check')} Enregistrer</button>
+  <button class="btn ghost block" style="margin-top:6px" data-act="ppDel" data-n="${esc(p.nom)}">${ico('trash')} Retirer de la liste</button>
+  <button class="btn ghost block" data-act="admPomp">Retour à la liste</button>`);
 }
 function parsePompiers(txt) {
   const out = [];
@@ -1539,14 +1562,19 @@ function parsePompiers(txt) {
     if (!cols.length) continue;
     const nom = nomPropre(cols[0].replace(/^\d+\s*[.)-]?\s+/, ''));
     if (nom.length < 3 || !/[a-zà-ÿ]/i.test(nom) || /^nom/i.test(nom)) continue;
-    const grade = (cols[1] || '').length <= 6 ? (cols[1] || '').toUpperCase() : '';
-    out.push({ nom, grade });
+    const grade = (cols[1] || '').length <= 6 && !normFdf(cols[1]) ? (cols[1] || '').toUpperCase() : '';
+    let fdf = '', comp = [];
+    for (const c of cols.slice(grade ? 2 : 1)) {
+      if (normFdf(c)) fdf = normFdf(c);
+      else if (/^[A-Za-zÀ-ÿ/]{2,6}\s?\d?$/.test(c)) comp = comp.concat(compList(c));   // COD 2, SAP 1… (pas les téléphones)
+    }
+    out.push({ nom, grade, fdf, comp });
   }
   return out;
 }
 async function savePompiers(list) {
   const seen = new Set(), L = [];
-  for (const p of list) { const k = norm(p.nom); if (!k || seen.has(k)) continue; seen.add(k); L.push({ nom: p.nom, grade: p.grade || '' }); }
+  for (const p of list) { const k = norm(p.nom); if (!k || seen.has(k)) continue; seen.add(k); L.push({ nom: p.nom, grade: p.grade || '', fdf: p.fdf || '', comp: [...new Set(p.comp || [])] }); }
   return saveConf(Object.assign({}, S.conf, { pompiers: L }));
 }
 async function admLinkSheet() {
@@ -1776,7 +1804,8 @@ const ACT = {
     const nom = $('#lg-nom').value.trim().replace(/\s+/g, ' ');
     if (nom.length < 2) { toast('Indique ton nom', true); return; }
     const sel = document.querySelector('#lg-eq button.on');
-    S.user = { nom, equipe: sel ? sel.dataset.e : '' };
+    const fiche = pompiers().find(p => norm(p.nom) === norm(nom)) || {};
+    S.user = { nom, equipe: sel ? sel.dataset.e : '', grade: fiche.grade || '', fdf: fiche.fdf || '', comp: fiche.comp || [] };
     LS.set('mv.user', S.user); LS.set('mv.lastNom', nom); LS.set('mv.lastEq', S.user.equipe);
     go('home'); sync(true); openPendingEngin();
   },
@@ -1862,7 +1891,16 @@ const ACT = {
     const nom = nomPropre($('#pp-nom').value), grade = $('#pp-gr').value.trim().toUpperCase();
     if (nom.length < 3) { toast('Indique le nom et le prénom', true); return; }
     if (pompiers().some(p => norm(p.nom) === norm(nom))) { toast(nom + ' est déjà dans la liste', true); return; }
-    if (await savePompiers(pompiers().concat([{ nom, grade }]))) { admPompSheet(); toast(nom + ' ajouté'); }
+    if (await savePompiers(pompiers().concat([{ nom, grade, fdf: fdfVal(), comp: compList($('#pp-comp').value) }]))) { admPompSheet(); toast(nom + ' ajouté'); }
+  },
+  ppFdf(el) { document.querySelectorAll('#pp-fdf button').forEach(b => { b.classList.toggle('on', b === el); b.classList.toggle('def', b === el); }); },
+  ppEdit: el => ppEditSheet(el.dataset.n),
+  async ppSave(el) {
+    const old = el.dataset.n, nom = nomPropre($('#pe-nom').value);
+    if (nom.length < 3) { toast('Indique le nom et le prénom', true); return; }
+    if (nom !== old && pompiers().some(p => norm(p.nom) === norm(nom))) { toast(nom + ' est déjà dans la liste', true); return; }
+    const np = { nom, grade: $('#pp-gr').value.trim().toUpperCase(), fdf: fdfVal(), comp: compList($('#pp-comp').value) };
+    if (await savePompiers(pompiers().map(p => p.nom === old ? np : p))) { admPompSheet(); toast('Enregistré'); }
   },
   async ppDel(el) {
     const n = el.dataset.n;
@@ -1873,8 +1911,13 @@ const ACT = {
   async ppImport() {
     const add = parsePompiers($('#pp-imp').value);
     if (!add.length) { toast('Aucun nom trouvé dans le texte collé', true); return; }
-    const before = pompiers().length;
-    if (await savePompiers(pompiers().concat(add))) { admPompSheet(); toast(`${pompiers().length - before} pompier(s) ajouté(s)`); }
+    const L = pompiers(), before = L.length; let maj = 0;
+    for (const a of add) {
+      const ex = L.find(p => norm(p.nom) === norm(a.nom));
+      if (!ex) { L.push(a); continue; }
+      if (a.grade) ex.grade = a.grade; if (a.fdf) ex.fdf = a.fdf; if (a.comp.length) ex.comp = [...new Set((ex.comp || []).concat(a.comp))]; maj++;
+    }
+    if (await savePompiers(L)) { admPompSheet(); toast(`${L.length - before} ajouté(s)${maj ? `, ${maj} mis à jour` : ''}`); }
   },
   async admCentreSave() {
     const c = Object.assign({}, S.conf, { centre: $('#ce-nom').value.trim() || 'CS Cruzy / Quarante', releve: +$('#ce-rel').value });
