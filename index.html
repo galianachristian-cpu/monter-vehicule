@@ -320,6 +320,13 @@ code.tok{display:block;word-break:break-all;font-size:12px;background:#0e1117;bo
 .qrbtn b{display:block}
 .hyg{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;margin-bottom:12px;border:1px solid var(--line);background:var(--panel)}
 .hyg.on{border-color:rgba(39,207,124,.5);background:linear-gradient(180deg,rgba(39,207,124,.12),var(--panel))}
+.sugg{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.sugg button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#0e1117;border:1px solid var(--line2);text-align:left;font-weight:600}
+.sugg button.on{border-color:var(--red2);background:rgba(229,35,44,.14)}
+.sugg .gr{margin-left:auto;font-size:12px;color:var(--mut);font-weight:700}
+.prow{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #1d222d}
+.prow:last-child{border-bottom:0}
+.prow .gr{font-size:12px;font-weight:700;color:var(--mut);background:var(--panel2);padding:3px 8px;border-radius:99px}
 .vedit{padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px}
 </style>
 </head>
@@ -832,8 +839,27 @@ function viewActivation() {
     <button class="btn ghost block" style="margin-top:12px" data-act="demo">Essayer en mode démo</button>
   </div>`;
 }
+/* ---------- pompiers du centre ---------- */
+// « Affre - Nathan » ou « Chamayou-Alain » (planning) -> « Affre Nathan »
+function nomPropre(t) {
+  let n = String(t || '').trim().replace(/\s+/g, ' ');
+  if (/\s-|-\s/.test(n)) n = n.replace(/\s*-\s*/, ' ').replace(/\s+/g, ' ');
+  else if (/^[^\s-]+-[^\s-]+$/.test(n)) n = n.replace('-', ' ');
+  return n;
+}
+function pompiers() {
+  return (S.conf.pompiers || []).map(p => typeof p === 'string' ? { nom: p, grade: '' } : p).filter(p => p && p.nom)
+    .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+}
+function suggHtml(q) {
+  const k = q && q.trim() ? norm(q) : '', L = pompiers();
+  const r = (k ? L.filter(p => norm(p.nom).includes(k)) : L).slice(0, k ? 8 : 60);
+  if (!L.length) return '';
+  if (!r.length) return `<div class="small muted" style="margin:8px 2px 0">Pas dans la liste : ton nom sera ajouté tel que tapé.</div>`;
+  return r.map(p => `<button data-act="lgPick" data-n="${esc(p.nom)}" class="${p.nom === q ? 'on' : ''}">${ico('user')}<span>${esc(p.nom)}</span>${p.grade ? `<span class="gr">${esc(p.grade)}</span>` : ''}</button>`).join('');
+}
 function viewLogin() {
-  const known = new Set([...(S.conf.pompiers || [])]);
+  const known = new Set(pompiers().map(p => p.nom));
   IDX.ctrls.slice(0, 200).forEach(c => known.add(c.auteur));
   const eq = S.user && S.user.equipe || LS.get('mv.lastEq', '');
   return `<div class="splash">
@@ -842,8 +868,8 @@ function viewLogin() {
     <p class="sub">Prise de garde · <b>${esc(S.conf.centre || 'CS Cruzy / Quarante')}</b></p>
     <div class="card">
       <label class="fld"><span>Nom et prénom</span>
-        <input class="inp" id="lg-nom" list="lg-list" placeholder="ex. Torrentelle Mathis" autocomplete="name" value="${esc(LS.get('mv.lastNom', ''))}">
-        <datalist id="lg-list">${[...known].sort().map(n => `<option value="${esc(n)}">`).join('')}</datalist></label>
+        <input class="inp" id="lg-nom" placeholder="${pompiers().length ? 'Tape les premières lettres…' : 'ex. Torrentelle Mathis'}" autocomplete="off" value="${esc(LS.get('mv.lastNom', ''))}">
+        ${pompiers().length ? `<div class="sugg" id="lg-sugg" style="max-height:260px;overflow:auto">${suggHtml(LS.get('mv.lastNom', ''))}</div>` : `<datalist id="lg-list">${[...known].sort().map(n => `<option value="${esc(n)}">`).join('')}</datalist>`}</label>
       <label class="fld"><span>Équipe</span>
         <div class="seg" id="lg-eq">${['1', '2', '3', '4', '5', '6', 'Autre'].map(e => `<button data-act="lgeq" data-e="${e}" class="${eq === e ? 'on def' : ''}">${e === 'Autre' ? 'Autre' : 'Éq. ' + e}</button>`).join('')}</div></label>
       <button class="btn red block" style="margin-top:6px" data-act="login">C’est parti ${ico('chev')}</button>
@@ -1440,7 +1466,8 @@ function viewReglages() {
 function adminPanel() {
   return `<div class="list">
     <button class="li" data-act="admVeh"><div class="lic">${ico('truck')}</div><div class="grow"><div class="lt">Engins du centre</div><div class="ls">${vehs(true).length} engins · nom, plaque, type, niveaux</div></div>${ico('chev', 'chev')}</button>
-    <button class="li" data-act="admCentre"><div class="lic">${ico('gear')}</div><div class="grow"><div class="lt">Centre et garde</div><div class="ls">Nom, heure de relève (${p2(S.conf.releve || 7)}h), liste des pompiers, code</div></div>${ico('chev', 'chev')}</button>
+    <button class="li" data-act="admPomp"><div class="lic">${ico('user')}</div><div class="grow"><div class="lt">Pompiers du centre</div><div class="ls">${pompiers().length} pompier${pompiers().length > 1 ? 's' : ''} · ajouter, supprimer, importer une liste</div></div>${ico('chev', 'chev')}</button>
+    <button class="li" data-act="admCentre"><div class="lic">${ico('gear')}</div><div class="grow"><div class="lt">Centre et garde</div><div class="ls">Nom, heure de relève (${p2(S.conf.releve || 7)}h), code responsable</div></div>${ico('chev', 'chev')}</button>
     ${S.cfg.demo ? '' : `<button class="li" data-act="admLink"><div class="lic">${ico('link')}</div><div class="grow"><div class="lt">Activer un téléphone</div><div class="ls">QR code et lien à partager aux pompiers</div></div>${ico('chev', 'chev')}</button>`}
     <button class="li" data-act="admLabels"><div class="lic">${ico('qr')}</div><div class="grow"><div class="lt">Étiquettes QR des pochettes</div><div class="ls">Imprimer, personnage, anciens QR codes</div></div>${ico('chev', 'chev')}</button>
     <button class="li" data-act="admExport"><div class="lic">${ico('dl')}</div><div class="grow"><div class="lt">Exporter (tableur)</div><div class="ls">Fichier CSV des montées, à ouvrir dans Excel / Sheets</div></div>${ico('chev', 'chev')}</button>
@@ -1482,10 +1509,45 @@ function admCentreSheet() {
   sheet(`<h3>Centre et garde</h3>
   <label class="fld"><span>Nom du centre</span><input class="inp" id="ce-nom" value="${esc(c.centre)}"></label>
   <label class="fld"><span>Heure de relève (début de garde)</span><select class="inp" id="ce-rel">${Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${+c.releve === h ? 'selected' : ''}>${p2(h)} h 00</option>`).join('')}</select></label>
-  <label class="fld"><span>Pompiers du centre (un par ligne, pour la saisie rapide)</span><textarea class="inp" id="ce-pomp" style="min-height:140px" placeholder="Nom Prénom">${esc((c.pompiers || []).join('\n'))}</textarea></label>
   <label class="fld"><span>Nouveau code responsable (laisser vide pour garder l’actuel)</span><input class="inp" id="ce-pin" inputmode="numeric" type="password" placeholder="4 chiffres ou plus"></label>
   <button class="btn red block" data-act="admCentreSave">${ico('check')} Enregistrer</button>
   <button class="btn ghost block" style="margin-top:6px" data-act="close">Fermer</button>`);
+}
+function pompRows(q) {
+  const k = q && q.trim() ? norm(q) : '', L = pompiers().filter(p => !k || norm(p.nom).includes(k));
+  if (!L.length) return `<div class="small muted" style="padding:10px 4px">${pompiers().length ? 'Aucun nom ne correspond.' : 'Aucun pompier pour l’instant : ajoute-les un par un ou importe une liste.'}</div>`;
+  return L.map(p => `<div class="prow"><span class="grow" style="font-weight:600">${esc(p.nom)}</span>${p.grade ? `<span class="gr">${esc(p.grade)}</span>` : ''}<button class="btn sm ghost" style="min-height:36px;padding:0 10px" data-act="ppDel" data-n="${esc(p.nom)}" aria-label="Supprimer">${ico('trash')}</button></div>`).join('');
+}
+function admPompSheet() {
+  sheet(`<h3>Pompiers du centre</h3>
+  <p class="muted small" style="margin-top:0">${pompiers().length} dans la liste. Elle est proposée à la connexion sur tous les téléphones.</p>
+  <div class="card" style="margin-bottom:12px"><b>Ajouter un pompier</b>
+    <div class="row" style="margin-top:10px;align-items:stretch"><input class="inp" id="pp-nom" placeholder="Nom Prénom" style="flex:2"><input class="inp" id="pp-gr" placeholder="Grade" style="flex:1;min-width:0" autocapitalize="characters"></div>
+    <button class="btn red block" style="margin-top:10px" data-act="ppAdd">${ico('plus')} Ajouter</button></div>
+  <input class="inp" id="pp-q" placeholder="Rechercher dans la liste…" autocomplete="off">
+  <div class="card" style="margin-top:8px;padding:4px 12px;max-height:46vh;overflow:auto" id="pp-list">${pompRows('')}</div>
+  <details class="card" style="margin-top:12px"><summary style="font-weight:700;cursor:pointer">Importer une liste (copier-coller)</summary>
+    <p class="small muted">Copie les colonnes « Nom-Prénom » et « Grade » de ton planning (onglet Donnée) et colle-les ici : un pompier par ligne. Les doublons sont ignorés.</p>
+    <textarea class="inp" id="pp-imp" style="min-height:140px" placeholder="Affre - Nathan&#9;CAP&#10;Azema - Fabien&#9;C/C"></textarea>
+    <button class="btn block" style="margin-top:10px" data-act="ppImport">${ico('dl')} Ajouter ces pompiers</button></details>
+  <button class="btn ghost block" style="margin-top:8px" data-act="close">Fermer</button>`);
+}
+function parsePompiers(txt) {
+  const out = [];
+  for (const line of String(txt).split(/\r?\n/)) {
+    const cols = line.split(/\t|;/).map(x => x.trim()).filter(Boolean);
+    if (!cols.length) continue;
+    const nom = nomPropre(cols[0].replace(/^\d+\s*[.)-]?\s+/, ''));
+    if (nom.length < 3 || !/[a-zà-ÿ]/i.test(nom) || /^nom/i.test(nom)) continue;
+    const grade = (cols[1] || '').length <= 6 ? (cols[1] || '').toUpperCase() : '';
+    out.push({ nom, grade });
+  }
+  return out;
+}
+async function savePompiers(list) {
+  const seen = new Set(), L = [];
+  for (const p of list) { const k = norm(p.nom); if (!k || seen.has(k)) continue; seen.add(k); L.push({ nom: p.nom, grade: p.grade || '' }); }
+  return saveConf(Object.assign({}, S.conf, { pompiers: L }));
 }
 async function admLinkSheet() {
   const link = location.origin + location.pathname + '#activer=' + b64url(JSON.stringify({ o: S.cfg.o, r: S.cfg.r, t: S.cfg.t, b: S.cfg.b || 'main' }));
@@ -1709,6 +1771,7 @@ const ACT = {
 
   // connexion
   lgeq: el => { document.querySelectorAll('#lg-eq button').forEach(b => b.classList.toggle('on', b === el)); document.querySelectorAll('#lg-eq button').forEach(b => b.classList.toggle('def', b === el)); ACT.lgeq.v = el.dataset.e; },
+  lgPick(el) { $('#lg-nom').value = el.dataset.n; $('#lg-sugg').innerHTML = suggHtml(el.dataset.n); },
   login() {
     const nom = $('#lg-nom').value.trim().replace(/\s+/g, ' ');
     if (nom.length < 2) { toast('Indique ton nom', true); return; }
@@ -1794,8 +1857,27 @@ const ACT = {
     if (await saveConf(Object.assign({}, S.conf, { vehicules: list }))) { admVehSheet(); render(); }
   },
   admCentre: admCentreSheet,
+  admPomp: admPompSheet,
+  async ppAdd() {
+    const nom = nomPropre($('#pp-nom').value), grade = $('#pp-gr').value.trim().toUpperCase();
+    if (nom.length < 3) { toast('Indique le nom et le prénom', true); return; }
+    if (pompiers().some(p => norm(p.nom) === norm(nom))) { toast(nom + ' est déjà dans la liste', true); return; }
+    if (await savePompiers(pompiers().concat([{ nom, grade }]))) { admPompSheet(); toast(nom + ' ajouté'); }
+  },
+  async ppDel(el) {
+    const n = el.dataset.n;
+    if (!confirm(`Retirer ${n} de la liste ?\n(ses montées déjà faites restent dans l’historique)`)) return;
+    const q = $('#pp-q') ? $('#pp-q').value : '';
+    if (await savePompiers(pompiers().filter(p => p.nom !== n))) { admPompSheet(); if (q) { $('#pp-q').value = q; $('#pp-list').innerHTML = pompRows(q); } }
+  },
+  async ppImport() {
+    const add = parsePompiers($('#pp-imp').value);
+    if (!add.length) { toast('Aucun nom trouvé dans le texte collé', true); return; }
+    const before = pompiers().length;
+    if (await savePompiers(pompiers().concat(add))) { admPompSheet(); toast(`${pompiers().length - before} pompier(s) ajouté(s)`); }
+  },
   async admCentreSave() {
-    const c = Object.assign({}, S.conf, { centre: $('#ce-nom').value.trim() || 'CS Cruzy / Quarante', releve: +$('#ce-rel').value, pompiers: $('#ce-pomp').value.split('\n').map(s => s.trim()).filter(Boolean) });
+    const c = Object.assign({}, S.conf, { centre: $('#ce-nom').value.trim() || 'CS Cruzy / Quarante', releve: +$('#ce-rel').value });
     const pin = $('#ce-pin').value.trim();
     if (pin) { if (pin.length < 4) { toast('4 chiffres minimum', true); return; } c.pin = await sha256('mv:' + pin); }
     if (await saveConf(c)) { closeSheet(); render(); }
@@ -1831,6 +1913,8 @@ document.addEventListener('click', e => {
   const f = ACT[el.dataset.act]; if (f) { e.preventDefault(); f(el, e); }
 });
 document.addEventListener('input', e => {
+  if (e.target.id === 'lg-nom' && $('#lg-sugg')) { $('#lg-sugg').innerHTML = suggHtml(e.target.value); return; }
+  if (e.target.id === 'pp-q') { $('#pp-list').innerHTML = pompRows(e.target.value); return; }
   const el = e.target; if (!el.dataset || !el.dataset.in || !W) return;
   const k = el.dataset.in;
   if (k === 'km' || k === 'hp') {
