@@ -1,5 +1,5 @@
 /* Montée en véhicule : service worker pour l'installation et l'usage hors ligne */
-const CACHE = 'monter-vehicule-v6';
+const CACHE = 'monter-vehicule-v7';
 const CORE = ['./', './index.html', './fat.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

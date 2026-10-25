@@ -366,10 +366,13 @@ code.tok{display:block;word-break:break-all;font-size:12px;background:var(--fiel
 .vcard.st-bad{animation:alarmGlow 1.6s ease-in-out infinite}
 @keyframes alarmGlow{50%{box-shadow:0 0 0 1px rgba(255,74,80,.6),0 16px 40px -14px rgba(229,35,44,.85)}}
 .gy{transition:opacity .1s}
-.st-bad .gy1,.gyro-on .gy1,#intro .gy1{animation:gyA .55s steps(1) infinite}
-.st-bad .gy2,.gyro-on .gy2,#intro .gy2{animation:gyB .55s steps(1) infinite}
-@keyframes gyA{0%{opacity:1;filter:drop-shadow(0 0 4px #4d9bff)}50%{opacity:.15;filter:none}}
-@keyframes gyB{0%{opacity:.15;filter:none}50%{opacity:1;filter:drop-shadow(0 0 4px #4d9bff)}}
+.gy{animation:gyFlash 1.1s linear infinite}
+.gh{animation:ghFlash 1.1s linear infinite}
+.gy2,.gh2{animation-delay:-.55s}
+.st-bad .gy,.st-bad .gh,.gyro-on .gy,.gyro-on .gh,#intro .gy,#intro .gh{animation-duration:.7s}
+.st-bad .gy2,.st-bad .gh2,.gyro-on .gy2,.gyro-on .gh2,#intro .gy2,#intro .gh2{animation-delay:-.35s}
+@keyframes gyFlash{0%,14%,28%{opacity:1}7%,21%,35%,100%{opacity:.22}}
+@keyframes ghFlash{0%,14%,28%{opacity:.95}7%,21%,35%,100%{opacity:0}}
 
 /* intro */
 #intro{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(circle at 50% 42%,#33090f 0%,#0b0d11 62%);animation:introOut .5s ease 1.35s forwards}
@@ -493,6 +496,7 @@ code.tok{display:block;word-break:break-all;font-size:12px;background:var(--fiel
     <linearGradient id="gTank" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f4f7"/><stop offset=".5" stop-color="#c6cbd4"/><stop offset="1" stop-color="#7c8390"/></linearGradient>
     <linearGradient id="gGrey" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#59606e"/><stop offset="1" stop-color="#2b3039"/></linearGradient>
     <radialGradient id="gWheel"><stop offset=".45" stop-color="#b8bfcc"/><stop offset=".55" stop-color="#3a3f49"/><stop offset=".62" stop-color="#121418"/></radialGradient>
+    <radialGradient id="gGyro"><stop offset="0" stop-color="#cfe3ff" stop-opacity=".95"/><stop offset=".35" stop-color="#4d9bff" stop-opacity=".6"/><stop offset="1" stop-color="#3d8bff" stop-opacity="0"/></radialGradient>
     <linearGradient id="gFlame" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff2d36"/><stop offset=".6" stop-color="#ff7a1f"/><stop offset="1" stop-color="#ffd04a"/></linearGradient>
   </defs>
 </svg>
@@ -579,7 +583,11 @@ const EMBLEM = `<svg class="emb" viewBox="0 0 100 100">
 
 /* ---------- silhouettes des engins ---------- */
 function wheel(x, y, r) { const k = r * .5; return `<circle cx="${x}" cy="${y}" r="${r}" fill="#0c0d10"/><g class="whl"><circle cx="${x}" cy="${y}" r="${r * .82}" fill="url(#gWheel)"/><path d="M${x - k} ${y}H${x + k}M${x} ${y - k}V${y + k}" stroke="#454b57" stroke-width="${r * .14}" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="${r * .22}" fill="#2b2f37"/></g>`; }
-function lights(x, y, w) { return `<rect x="${x}" y="${y}" width="${w}" height="6" rx="2.5" fill="#1a2f5c"/><rect class="gy gy1" x="${x + 2}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#4d9bff"/><rect class="gy gy2" x="${x + w / 2 + 1}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#4d9bff" opacity=".55"/>`; }
+function lights(x, y, w) {
+  // rampe bleue : deux feux en double éclat alterné, avec leur halo (invisible à l'impression)
+  return `<ellipse class="gh gh1" cx="${x + w / 4}" cy="${y + 3}" rx="${w * .85}" ry="${w * .5}" fill="url(#gGyro)" opacity="0"/><ellipse class="gh gh2" cx="${x + w * .75}" cy="${y + 3}" rx="${w * .85}" ry="${w * .5}" fill="url(#gGyro)" opacity="0"/>` +
+    `<rect x="${x}" y="${y}" width="${w}" height="6" rx="2.5" fill="#1a2f5c"/><rect class="gy gy1" x="${x + 2}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#6aaeff"/><rect class="gy gy2" x="${x + w / 2 + 1}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#6aaeff" opacity=".55"/>`;
+}
 function vehSvg(type) {
   const sh = '<ellipse cx="130" cy="110" rx="116" ry="6" fill="#000" opacity=".45"/>';
   const truckCab = (x, top) => `
