@@ -283,7 +283,7 @@ select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50
 /* ---------- feuille / modale ---------- */
 .sheet-bg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);animation:fade .2s}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-height:92vh;overflow:auto;background:var(--bg2);border-top:1px solid var(--line2);
-  border-radius:24px 24px 0 0;padding:10px 16px calc(20px + var(--safe-b));animation:up .25s cubic-bezier(.2,.9,.3,1)}
+  border-radius:24px 24px 0 0;padding:10px 16px calc(20px + var(--safe-b));animation:up .45s cubic-bezier(.2,1.25,.35,1)}
 .sheet .in{max-width:680px;margin:0 auto}
 .sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line2);margin:0 auto 12px}
 .sheet h3{font:800 26px/1.05 var(--cond);margin:4px 0 6px}
@@ -432,6 +432,55 @@ code.tok{display:block;word-break:break-all;font-size:12px;background:var(--fiel
 .tri button,.seg button,.btn,.chip{transition:transform .12s,background .2s,color .2s,border-color .2s}
 .tri button:active,.seg button:active{transform:scale(.9)}
 @media (prefers-reduced-motion: reduce){*,*:before,*:after{animation:none!important;transition:none!important}#intro{display:none}}
+/* ===== effets, 2e vague ===== */
+#app{position:relative;z-index:1}
+.aurora{position:fixed;inset:-25%;z-index:0;pointer-events:none;opacity:calc(var(--glow) * 4);
+  background:radial-gradient(35% 28% at 18% 12%,rgba(229,35,44,.32),transparent 70%),radial-gradient(30% 24% at 86% 34%,rgba(255,120,40,.2),transparent 70%),radial-gradient(28% 22% at 40% 90%,rgba(229,35,44,.14),transparent 70%);
+  animation:aur 22s ease-in-out infinite alternate}
+@keyframes aur{50%{transform:translate(5%,4%) rotate(6deg) scale(1.05)}to{transform:translate(-4%,7%) rotate(-5deg)}}
+.embers{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:calc(.35 + var(--glow) * 2.5)}
+.embers i{position:absolute;bottom:-12px;border-radius:50%;background:radial-gradient(circle,#ffe2a0,#ff7a2b 55%,rgba(255,60,40,0) 72%);box-shadow:0 0 10px 2px rgba(255,110,40,.5);opacity:0;animation:ember linear infinite}
+@keyframes ember{0%{transform:translate(0,0) scale(1);opacity:0}12%{opacity:.95}70%{opacity:.55}100%{transform:translate(var(--dx),-108vh) scale(.4);opacity:0}}
+.top h1,.splash h1{background:linear-gradient(100deg,var(--txt) 38%,#ff7a7f 50%,#ffd27a 54%,var(--txt) 64%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:titleShine 7s ease-in-out infinite}
+@keyframes titleShine{0%,55%{background-position:100% 0}100%{background-position:-60% 0}}
+.top .emb path:nth-of-type(2),.splash .emb path:nth-of-type(2),.splash .emb path:nth-of-type(3){transform-box:fill-box;transform-origin:50% 100%;animation:flick .2s ease-in-out infinite alternate}
+.splash .emb{animation:embGlow 1.8s ease-in-out infinite alternate}
+.btn,.li,.qrbtn,.chip,.seg button,.tri button,.tog{position:relative;overflow:hidden}
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.22;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+.vcard{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.vcard:active{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.97)}
+.vcard.tilt{transition:transform .08s linear,box-shadow .3s,border-color .3s}
+.vcard:after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.16),transparent 46%)}
+.vcard.tilt:after{opacity:1}
+.whl{transform-box:fill-box;transform-origin:center}
+.pg.fade .vcard .vimg svg,.pg.fade .hero>svg{animation:driveIn 1s cubic-bezier(.15,.75,.25,1) both;animation-delay:calc(var(--i,0) * 70ms + 120ms)}
+.pg.fade .vcard .whl,.pg.fade .hero .whl{animation:spinW 1s cubic-bezier(.15,.75,.25,1) both;animation-delay:calc(var(--i,0) * 70ms + 120ms)}
+@keyframes driveIn{from{transform:translateX(-46%);opacity:0}45%{opacity:1}}
+@keyframes spinW{from{transform:rotate(-620deg)}}
+.cta{overflow:hidden}
+.cta:after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-20deg);animation:ctaShine 4s ease-in-out infinite}
+@keyframes ctaShine{0%,72%{left:-60%}100%{left:135%}}
+.cta .ico{animation:truckBob 1.4s ease-in-out infinite}
+@keyframes truckBob{50%{transform:translate(2px,-2px)}}
+.nav button.on:before{content:"";position:absolute;top:-9px;left:28%;right:28%;height:3px;border-radius:0 0 4px 4px;background:var(--red2);box-shadow:0 0 14px var(--red2)}
+.chg .nav button.on .ico{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.chg .nav button.on:before{animation:navIn .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.5)}}
+@keyframes navIn{from{transform:scaleX(0)}}
+.garde>*{position:relative;z-index:1}
+.garde:after{content:"";position:absolute;left:-60px;top:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,120,40,.22),transparent);animation:floaty 9s ease-in-out infinite alternate}
+.garde:before{animation:floaty 11s ease-in-out infinite alternate-reverse}
+@keyframes floaty{to{transform:translate(40px,30px) scale(1.15)}}
+.steps i{transition:background .4s}
+.steps i.s-cur{box-shadow:0 0 12px var(--red2);animation:stepPulse 1.6s ease-in-out infinite}
+@keyframes stepPulse{50%{box-shadow:0 0 2px var(--red2)}}
+.done .ok{position:relative}
+.done .ok:before,.done .ok:after{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid rgba(39,207,124,.55);animation:ringOut 2s ease-out infinite}
+.done .ok:after{animation-delay:1s}
+@keyframes ringOut{from{transform:scale(1);opacity:.9}to{transform:scale(2);opacity:0}}
+.pill.ok .ico{animation:pop .5s cubic-bezier(.2,1.6,.4,1) both}
 .vedit{padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px}
 </style>
 </head>
@@ -529,7 +578,7 @@ const EMBLEM = `<svg class="emb" viewBox="0 0 100 100">
 </svg>`;
 
 /* ---------- silhouettes des engins ---------- */
-function wheel(x, y, r) { return `<circle cx="${x}" cy="${y}" r="${r}" fill="#0c0d10"/><circle cx="${x}" cy="${y}" r="${r * .82}" fill="url(#gWheel)"/><circle cx="${x}" cy="${y}" r="${r * .22}" fill="#2b2f37"/>`; }
+function wheel(x, y, r) { const k = r * .5; return `<circle cx="${x}" cy="${y}" r="${r}" fill="#0c0d10"/><g class="whl"><circle cx="${x}" cy="${y}" r="${r * .82}" fill="url(#gWheel)"/><path d="M${x - k} ${y}H${x + k}M${x} ${y - k}V${y + k}" stroke="#454b57" stroke-width="${r * .14}" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="${r * .22}" fill="#2b2f37"/></g>`; }
 function lights(x, y, w) { return `<rect x="${x}" y="${y}" width="${w}" height="6" rx="2.5" fill="#1a2f5c"/><rect class="gy gy1" x="${x + 2}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#4d9bff"/><rect class="gy gy2" x="${x + w / 2 + 1}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#4d9bff" opacity=".55"/>`; }
 function vehSvg(type) {
   const sh = '<ellipse cx="130" cy="110" rx="116" ry="6" fill="#000" opacity=".45"/>';
@@ -886,7 +935,7 @@ function render() {
   app.innerHTML = html;
   if (same) window.scrollTo(0, y);
   const key = S.view + '|' + S.arg + '|' + (S.view === 'wizard' && W ? W.step : '');
-  if (key !== render.key) { const pg = $('.pg'); if (pg) pg.classList.add(S.anim || 'fade'); render.key = key; }
+  if (key !== render.key) { const pg = $('.pg'); if (pg) pg.classList.add(S.anim || 'fade'); render.key = key; app.classList.add('chg'); clearTimeout(render.t); render.t = setTimeout(() => app.classList.remove('chg'), 700); countUp(); }
   S.anim = null;
   afterRender();
 }
@@ -894,6 +943,20 @@ const REDUCE = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)
 function afterRender() {
   if (S.rollKm && $('#in-km')) { const r = S.rollKm; S.rollKm = null; rollKm(r.from, r.to); }
   if (S.view === 'done' && S.celebrate) { S.celebrate = false; confetti(); if (navigator.vibrate) navigator.vibrate([25, 60, 40]); }
+}
+function countUp() {
+  if (REDUCE) return;
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const to = +el.dataset.count; if (!to) return;
+    const t0 = performance.now(), d = 1000, pre = el.dataset.pre || '';
+    (function f(t) { const k = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - k, 3); el.textContent = pre + nf(Math.round(to * e)); if (k < 1) requestAnimationFrame(f); })(t0);
+  });
+}
+function ambiance() {
+  const a = document.createElement('div'); a.className = 'aurora'; a.setAttribute('aria-hidden', 'true');
+  const e = document.createElement('div'); e.className = 'embers'; e.setAttribute('aria-hidden', 'true');
+  if (!REDUCE) e.innerHTML = Array.from({ length: 18 }, () => { const sz = 2 + Math.random() * 4; return `<i style="left:${(Math.random() * 100).toFixed(1)}%;width:${sz.toFixed(1)}px;height:${sz.toFixed(1)}px;animation-duration:${(8 + Math.random() * 10).toFixed(1)}s;animation-delay:${(-Math.random() * 18).toFixed(1)}s;--dx:${((Math.random() - .5) * 90).toFixed(0)}px"></i>`; }).join('');
+  document.body.prepend(e); document.body.prepend(a);
 }
 function rollKm(from, to) {
   const el = $('#in-km'); if (!el || REDUCE) return;
@@ -1052,7 +1115,7 @@ function viewHome() {
     <div class="ring2"><svg viewBox="0 0 96 96"><defs><linearGradient id="gRing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8a3c"/><stop offset="1" stop-color="#ff2d36"/></linearGradient></defs>
       <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="9"/>
       <circle class="fg" cx="48" cy="48" r="40" fill="none" stroke="${n === vs.length && n ? '#27cf7c' : 'url(#gRing)'}" stroke-width="9" stroke-linecap="round" style="--c:${C.toFixed(1)};stroke-dashoffset:${off.toFixed(1)}"/></svg>
-      <div class="ct"><b>${n}/${vs.length}</b><span>montés</span></div></div></div>
+      <div class="ct"><b><i style="font-style:normal" data-count="${n}">${n}</i>/${vs.length}</b><span>montés</span></div></div></div>
     <div class="meta" style="margin-top:12px"><span>Relève à <b>${p2(S.conf.releve || 7)}h</b>${mine ? ` · <b>${mine}</b> monté${mine > 1 ? 's' : ''} par toi` : ''}</span><span>${indispo ? `<b class="bad">${indispo} indispo</b>` : (n === vs.length && n ? '<b style="color:#7ff0b5">Tout est monté ✓</b>' : `${vs.length - n} à monter`)}</span></div>
   </section>
   ${S.outbox.length ? `<div class="card" style="margin-top:12px;border-color:rgba(255,174,31,.4)"><div class="row">${ico('wifi')}<div class="grow"><b>${S.outbox.length} contrôle${S.outbox.length > 1 ? 's' : ''} en attente d’envoi</b><div class="small muted">Gardé${S.outbox.length > 1 ? 's' : ''} sur le téléphone, envoi automatique dès que le réseau revient.</div></div><button class="btn sm" data-act="flush">Envoyer</button></div></div>` : ''}
@@ -1093,9 +1156,9 @@ function viewVeh() {
     ${s.indispo ? '<span class="pill bad">Indisponible</span>' : s.monte ? '<span class="pill ok">Monté</span>' : '<span class="pill">À monter</span>'}</div>
   </div>
   <div class="kv">
-    <div><b>${last && last.cpt !== null ? nf(last.cpt) : '—'}</b><span>${unit === 'h' ? 'heures' : 'km'} au dernier relevé</span></div>
+    <div><b ${last && last.cpt !== null ? `data-count="${last.cpt}"` : ''}>${last && last.cpt !== null ? nf(last.cpt) : '—'}</b><span>${unit === 'h' ? 'heures' : 'km'} au dernier relevé</span></div>
     <div><b>${diff !== null ? (diff >= 0 ? '+' : '') + nf(diff) : '—'}</b><span>depuis le précédent</span></div>
-    <div><b>${d7}</b><span>contrôles sur 30 jours</span></div>
+    <div><b data-count="${d7}">${d7}</b><span>contrôles sur 30 jours</span></div>
   </div>
   ${pts.length > 1 ? `<div class="card" style="margin-top:12px;padding:12px 12px 6px">${kmChart(pts, unit)}</div>` : ''}
   <button class="btn red block" style="margin-top:14px;min-height:58px;font-size:18px" data-act="start" data-id="${esc(v.id)}">${ico('truck')} ${v.type === 'GE' ? 'Contrôler le groupe' : 'Monter dans le ' + esc(v.nom)}</button>
@@ -2121,6 +2184,23 @@ document.addEventListener('click', e => {
   if (navigator.vibrate && el.matches('.tri button,.seg button,.tank button,.vcard,.btn,.chip,.tog')) navigator.vibrate(8);
   const f = ACT[el.dataset.act]; if (f) { e.preventDefault(); f(el, e); }
 });
+document.addEventListener('pointerdown', e => {
+  if (REDUCE) return;
+  const el = e.target.closest && e.target.closest('.btn,.li,.qrbtn,.chip,.seg button,.tri button,.tog,.vcard'); if (!el) return;
+  const r = el.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2, s = document.createElement('span');
+  s.className = 'rip'; s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+  el.appendChild(s); setTimeout(() => s.remove(), 650);
+});
+document.addEventListener('pointermove', e => {
+  if (REDUCE) return;
+  const c = e.target.closest && e.target.closest('.vcard'); if (!c) return;
+  const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+  c.style.setProperty('--ry', ((px - .5) * 12).toFixed(2) + 'deg'); c.style.setProperty('--rx', ((.5 - py) * 12).toFixed(2) + 'deg');
+  c.style.setProperty('--mx', (px * 100).toFixed(1) + '%'); c.style.setProperty('--my', (py * 100).toFixed(1) + '%'); c.classList.add('tilt');
+});
+const untilt = c => { c.classList.remove('tilt'); c.style.removeProperty('--rx'); c.style.removeProperty('--ry'); };
+document.addEventListener('pointerout', e => { const c = e.target.closest && e.target.closest('.vcard'); if (c && !c.contains(e.relatedTarget)) untilt(c); });
+['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, () => document.querySelectorAll('.vcard.tilt').forEach(untilt)));
 document.addEventListener('input', e => {
   if (e.target.id === 'lg-nom' && $('#lg-sugg')) { $('#lg-sugg').innerHTML = suggHtml(e.target.value); return; }
   if (e.target.id === 'pp-q') { $('#pp-list').innerHTML = pompRows(e.target.value); return; }
@@ -2156,6 +2236,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && S.
 })();
 
 if (W && S.user) S.view = 'home';
+ambiance();
 showIntro();
 render();
 openPendingEngin();
