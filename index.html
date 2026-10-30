@@ -484,6 +484,16 @@ code.tok{display:block;word-break:break-all;font-size:12px;background:var(--fiel
 .done .ok:after{animation-delay:1s}
 @keyframes ringOut{from{transform:scale(1);opacity:.9}to{transform:scale(2);opacity:0}}
 .pill.ok .ico{animation:pop .5s cubic-bezier(.2,1.6,.4,1) both}
+.vart{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;aspect-ratio:260/120}
+.vart img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 7px 6px rgba(0,0,0,.45))}
+.vgl{position:absolute;width:16%;aspect-ratio:1.6;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(207,227,255,.95),rgba(77,155,255,.6) 35%,rgba(61,139,255,0));opacity:0;animation:ghFlash 1.1s linear infinite;mix-blend-mode:screen}
+.vgl.gh2{animation-delay:-.55s}
+.st-bad .vgl,.gyro-on .vgl{animation-duration:.7s}
+.st-bad .vgl.gh2,.gyro-on .vgl.gh2{animation-delay:-.35s}
+.pg.fade .vcard .vimg .vart,.pg.fade .hero>.vart{animation:driveIn 1s cubic-bezier(.15,.75,.25,1) both;animation-delay:calc(var(--i,0) * 70ms + 120ms)}
+.vcard:active .vimg .vart{transform:translateX(6px) scale(1.04)}
+.hero>.vart{max-width:520px;margin:0 auto}
 .vedit{padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px}
 </style>
 </head>
@@ -587,6 +597,15 @@ function lights(x, y, w) {
   // rampe bleue : deux feux en double éclat alterné, avec leur halo (invisible à l'impression)
   return `<ellipse class="gh gh1" cx="${x + w / 4}" cy="${y + 3}" rx="${w * .85}" ry="${w * .5}" fill="url(#gGyro)" opacity="0"/><ellipse class="gh gh2" cx="${x + w * .75}" cy="${y + 3}" rx="${w * .85}" ry="${w * .5}" fill="url(#gGyro)" opacity="0"/>` +
     `<rect x="${x}" y="${y}" width="${w}" height="6" rx="2.5" fill="#1a2f5c"/><rect class="gy gy1" x="${x + 2}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#6aaeff"/><rect class="gy gy2" x="${x + w / 2 + 1}" y="${y + 1}" width="${w / 2 - 3}" height="4" rx="2" fill="#6aaeff" opacity=".55"/>`;
+}
+/* vraies images des engins (dossier engins/) : position des gyrophares en % de l'image */
+const ENGIN_IMG = {
+  'ccf-825': { src: 'engins/ccf-825.webp', gyro: [[87, 9], [60, 7]] }
+};
+function vehArt(v) {
+  const im = v && (ENGIN_IMG[v.id] || (v.img ? { src: v.img, gyro: [] } : null));
+  if (!im) return vehSvg(v ? v.type : 'FPT');
+  return `<span class="vart"><img src="${esc(im.src)}" alt="${esc(v.nom || '')}" loading="lazy" decoding="async">${(im.gyro || []).map(([x, y], i) => `<i class="vgl gh${i % 2 + 1}" style="left:${x}%;top:${y}%"></i>`).join('')}</span>`;
 }
 function vehSvg(type) {
   const sh = '<ellipse cx="130" cy="110" rx="116" ry="6" fill="#000" opacity=".45"/>';
@@ -1142,7 +1161,7 @@ function vCard(v, s, i) {
   const unit = v.compteur === 'h' ? 'h' : 'km';
   return `<button class="vcard ${cls}" data-act="veh" data-id="${esc(v.id)}" style="--i:${i || 0}">
     ${s.anos.length ? `<span class="bdg ${s.indispo ? 'bad' : ''}">${s.anos.length}</span>` : ''}
-    <div class="vimg">${vehSvg(v.type)}</div>
+    <div class="vimg">${vehArt(v)}</div>
     <div class="vn">${esc(v.nom)}</div>
     <div class="vp">${esc(v.plaque || TYPES[v.type] || '')}</div>
     <div class="vs">${pill}</div>
@@ -1159,7 +1178,7 @@ function viewVeh() {
   const diff = pts.length > 1 ? pts[pts.length - 1].cpt - pts[pts.length - 2].cpt : null;
   return `
   <button class="btn sm ghost" data-act="nav" data-v="home" style="margin-left:-10px">${ico('back')} Engins</button>
-  <div class="hero ${s.indispo ? 'gyro-on' : ''}">${vehSvg(v.type)}
+  <div class="hero ${s.indispo ? 'gyro-on' : ''}">${vehArt(v)}
     <div class="row"><div class="grow"><h2>${esc(v.nom)}</h2><div class="muted">${esc([TYPES[v.type], v.plaque].filter(Boolean).join(' · '))}</div></div>
     ${s.indispo ? '<span class="pill bad">Indisponible</span>' : s.monte ? '<span class="pill ok">Monté</span>' : '<span class="pill">À monter</span>'}</div>
   </div>
@@ -1299,7 +1318,7 @@ async function openCtrl(p) {
   const ess = Object.entries(c.essais || {}), essKo = ess.filter(([, e]) => e.etat === 'def');
   const lv = Object.entries(c.niveaux || {});
   sheet(`
-    <div class="row"><div style="width:110px">${vehSvg(v.type)}</div><div class="grow"><h3 style="margin:0">${esc(c.vehicule.nom)}</h3><div class="muted small">${esc(fDay(d))} · ${fTime(d)}</div></div></div>
+    <div class="row"><div style="width:110px">${vehArt(v)}</div><div class="grow"><h3 style="margin:0">${esc(c.vehicule.nom)}</h3><div class="muted small">${esc(fDay(d))} · ${fTime(d)}</div></div></div>
     <div class="rec"><div class="k">${ico('user')}</div><div><div class="t">${esc(c.auteur.nom)}</div><div class="d">${esc([c.auteur.grade, c.auteur.equipe ? 'Équipe ' + c.auteur.equipe : ''].filter(Boolean).join(' · '))}</div>${c.auteur.fdf || (c.auteur.comp || []).length ? `<div class="cps">${compChips(c.auteur)}</div>` : ''}</div></div>
     <div class="rec"><div class="k">${ico('gauge')}</div><div class="grow"><div class="t">${c.compteur.valeur !== null && c.compteur.valeur !== undefined ? nf(c.compteur.valeur) + ' ' + unit : 'Compteur non relevé'}</div>
       <div class="d">${c.compteur.heuresPompe ? 'Heures pompe : <b>' + nf(c.compteur.heuresPompe) + ' h</b> · ' : ''}${c.compteur.lu ? 'lu par le scanner' : 'saisi à la main'}</div>
@@ -1359,7 +1378,7 @@ function viewWizard() {
   return `
   <div class="wz-top">
     <div class="row"><button class="btn sm ghost" style="padding:0 6px;min-height:40px" data-act="wQuit">${ico('x')}</button>
-      <div class="vmini">${vehSvg(v.type)}</div>
+      <div class="vmini">${vehArt(v)}</div>
       <div class="grow"><h2>${esc(v.nom)}</h2><div class="st">Étape ${W.step + 1}/${st.length} · ${STEP_T[cur]}</div></div></div>
     <div class="steps">${st.map((s, i) => `<i class="${i < W.step ? 's-done' : i === W.step ? 's-cur' : ''}"></i>`).join('')}</div>
   </div>
@@ -1726,7 +1745,7 @@ async function saveConf(newConf) {
 }
 function admVehSheet() {
   sheet(`<h3>Engins du centre</h3><p class="muted small" style="margin-top:0">Les changements s’appliquent à tous les téléphones.</p>
-  ${vehs(true).map(v => `<button class="li" style="margin-bottom:8px" data-act="admVehEdit" data-id="${esc(v.id)}"><div style="width:70px">${vehSvg(v.type)}</div><div class="grow"><div class="lt">${esc(v.nom)} ${v.actif === false ? '<span class="pill">masqué</span>' : ''}</div><div class="ls">${esc([TYPES[v.type], v.plaque].filter(Boolean).join(' · '))}</div></div>${ico('chev', 'chev')}</button>`).join('')}
+  ${vehs(true).map(v => `<button class="li" style="margin-bottom:8px" data-act="admVehEdit" data-id="${esc(v.id)}"><div style="width:70px">${vehArt(v)}</div><div class="grow"><div class="lt">${esc(v.nom)} ${v.actif === false ? '<span class="pill">masqué</span>' : ''}</div><div class="ls">${esc([TYPES[v.type], v.plaque].filter(Boolean).join(' · '))}</div></div>${ico('chev', 'chev')}</button>`).join('')}
   <button class="btn block" data-act="admVehEdit" data-id="">${ico('plus')} Ajouter un engin</button>
   <button class="btn ghost block" style="margin-top:6px" data-act="close">Fermer</button>`);
 }
@@ -1924,7 +1943,7 @@ async function onQr(txt) {
   if (vid) { startWizard(vid); return; }
   if (S.admin) {
     sheet(`<h3>QR code inconnu</h3><p class="muted small" style="margin-top:0">Il n’est relié à aucun engin. À quel engin appartient-il ?</p>
-      <div class="list">${vehs(true).map(v => `<button class="li" data-act="qrAssocPick" data-id="${esc(v.id)}"><div style="width:64px">${vehSvg(v.type)}</div><div class="grow lt">${esc(v.nom)}</div>${ico('chev', 'chev')}</button>`).join('')}</div>
+      <div class="list">${vehs(true).map(v => `<button class="li" data-act="qrAssocPick" data-id="${esc(v.id)}"><div style="width:64px">${vehArt(v)}</div><div class="grow lt">${esc(v.nom)}</div>${ico('chev', 'chev')}</button>`).join('')}</div>
       <button class="btn ghost block" style="margin-top:8px" data-act="close">Annuler</button>`);
   } else toast('QR code inconnu : demande au responsable de l’associer à l’engin', true);
 }
@@ -1960,7 +1979,7 @@ async function printLabels() {
     const qr = qrcode(0, 'M'); qr.addData(appBase() + '#engin=' + v.id); qr.make();
     return `<div class="lab">
       <div class="hd">${EMBLEM.replace('class="emb"', 'class="em"')}<div><b>MONTÉE EN VÉHICULE</b><span>${esc(S.conf.centre || 'CS Cruzy / Quarante')}</span></div></div>
-      <div class="ill">${perso ? `<img src="${perso}">` : vehSvg(v.type)}</div>
+      <div class="ill">${perso ? `<img src="${perso}">` : ENGIN_IMG[v.id] ? `<img src="${new URL(ENGIN_IMG[v.id].src, location.href).href}">` : vehSvg(v.type)}</div>
       <div class="qr">${qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true })}</div>
       <div class="nm">${esc(v.nom)}</div>
       <div class="ft">Scanne-moi à la prise de garde</div></div>`;
