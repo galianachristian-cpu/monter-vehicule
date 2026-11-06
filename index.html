@@ -712,7 +712,15 @@ const GRAV_TXT = { mineur: 'À signaler, l’engin reste opérationnel', majeur:
 const QUICK = ['Choc / rayure carrosserie', 'Voyant allumé', 'Matériel manquant', 'Matériel endommagé', 'Fuite', 'Pneumatique', 'Éclairage / gyro', 'Radio / transmissions', 'Propreté / désinfection', 'Batterie / charge'];
 const DEFAULT_CONF = {
   centre: 'CS Cruzy / Quarante',
-  releve: 7,
+  releve: 19,
+  releveJour: 5,                       // vendredi : semaine de garde du vendredi 19h au vendredi 19h
+  cycle: { ref: '2026-11-06T19:00', garde: 4, nb: 4 },   // Garde 4 de service à partir du 6/11/2026 19h
+  gardes: [
+    { chef: 'Domenech Denis', adjoint: 'Jambaque Christophe' },
+    { chef: 'Juarez Carlos', adjoint: 'Gomes Jessica' },
+    { chef: 'Faure Sylvain', adjoint: 'Bonnet Michel' },
+    { chef: 'Ponsolle Nicolas', adjoint: 'Galiana Christian' }
+  ],
   pin: '',
   pompiers: [],
   personnage: '',
@@ -765,10 +773,30 @@ const vehs = (all) => (S.conf.vehicules || []).filter(v => all || v.actif !== fa
 const veh = id => (S.conf.vehicules || []).find(v => v.id === id) || { id, nom: unslug(id), type: 'FPT', niveaux: [], compteur: 'km' };
 const ctrlsOf = vid => IDX.ctrls.filter(c => c.vid === vid);
 const openOf = vid => IDX.open.filter(a => a.vid === vid);
+const JOURS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const hasJour = () => S.conf.releveJour !== undefined && S.conf.releveJour !== null && S.conf.releveJour !== '';
 function gardeStart(now = new Date()) {
-  const h = +S.conf.releve || 7, d = new Date(now); d.setHours(h, 0, 0, 0);
-  if (now < d) d.setDate(d.getDate() - 1);
+  const h = S.conf.releve === undefined ? 7 : +S.conf.releve, d = new Date(now); d.setHours(h, 0, 0, 0);
+  if (hasJour()) { d.setDate(d.getDate() - ((d.getDay() - +S.conf.releveJour + 7) % 7)); if (now < d) d.setDate(d.getDate() - 7); }
+  else if (now < d) d.setDate(d.getDate() - 1);
   return d;
+}
+// garde de service (rotation) : numéro, chef et adjoint
+function gardeDeService(now = new Date()) {
+  const c = S.conf.cycle; if (!c || !c.ref || !hasJour()) return null;
+  const nb = +c.nb || 4, start = gardeStart(now), ref = new Date(c.ref);
+  const k = Math.round((start - ref) / (7 * 864e5));
+  const n = ((((+c.garde - 1) + k) % nb) + nb) % nb + 1;
+  const g = (S.conf.gardes || [])[n - 1] || {};
+  const next = new Date(start); next.setDate(next.getDate() + 7);
+  return { n, chef: g.chef || '', adjoint: g.adjoint || '', start, next, suivante: n % nb + 1 };
+}
+function gardeMoment(now = new Date()) {
+  // week-end du vendredi 19h au lundi 7h, puis chaque soir de 19h à 7h
+  const d = now.getDay(), h = now.getHours();
+  if ((d === 5 && h >= 19) || d === 6 || d === 0 || (d === 1 && h < 7)) return 'Week-end de garde jusqu’à lundi 7h';
+  if (h >= 19 || h < 7) return 'De garde cette nuit jusqu’à 7h';
+  return 'Ce soir de 19h à 7h';
 }
 function vState(v) {
   const cs = ctrlsOf(v.id), last = cs[0], anos = openOf(v.id);
@@ -1135,15 +1163,19 @@ function viewHome() {
   <section class="garde">
     <div class="g-top"><div class="grow" style="min-width:0">
       <div class="hello">${h >= 18 || h < 5 ? 'Bonsoir' : 'Bonjour'} <b>${esc(prenom)}</b>, bonne garde !</div>
-      <div class="lbl">Garde en cours</div>
-      <div class="day">${esc(fDay(start))}</div>
+      ${(() => { const g = gardeDeService(); if (!g) return `<div class="lbl">Garde en cours</div><div class="day">${esc(fDay(start))}</div>`;
+        const fin = new Date(g.next.getTime() - 1);
+        return `<div class="lbl">Garde ${g.n} de service</div>
+        <div class="day" style="font-size:25px">${(() => { const m = d => d.toLocaleDateString('fr-FR', { month: 'long' }); return start.getMonth() === fin.getMonth() ? `Du ${start.getDate()} au ${fin.getDate()} ${m(fin)}` : `Du ${start.getDate()} ${m(start)} au ${fin.getDate()} ${m(fin)}`; })()}</div>
+        <div class="hello" style="margin:6px 0 0">${g.chef ? `Chef de garde <b>${esc(g.chef)}</b>` : ''}${g.adjoint ? `<br>Adjoint <b>${esc(g.adjoint)}</b>` : ''}</div>
+        <div class="small" style="color:#e6c3c5;margin-top:4px">${gardeMoment()}</div>`; })()}
       ${fiche.grade || fiche.fdf || (fiche.comp || []).length ? `<div class="cps">${fiche.grade ? `<span class="cp">${esc(fiche.grade)}</span>` : ''}${compChips(fiche)}</div>` : ''}
     </div>
     <div class="ring2"><svg viewBox="0 0 96 96"><defs><linearGradient id="gRing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8a3c"/><stop offset="1" stop-color="#ff2d36"/></linearGradient></defs>
       <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="9"/>
       <circle class="fg" cx="48" cy="48" r="40" fill="none" stroke="${n === vs.length && n ? '#27cf7c' : 'url(#gRing)'}" stroke-width="9" stroke-linecap="round" style="--c:${C.toFixed(1)};stroke-dashoffset:${off.toFixed(1)}"/></svg>
       <div class="ct"><b><i style="font-style:normal" data-count="${n}">${n}</i>/${vs.length}</b><span>montés</span></div></div></div>
-    <div class="meta" style="margin-top:12px"><span>Relève à <b>${p2(S.conf.releve || 7)}h</b>${mine ? ` · <b>${mine}</b> monté${mine > 1 ? 's' : ''} par toi` : ''}</span><span>${indispo ? `<b class="bad">${indispo} indispo</b>` : (n === vs.length && n ? '<b style="color:#7ff0b5">Tout est monté ✓</b>' : `${vs.length - n} à monter`)}</span></div>
+    <div class="meta" style="margin-top:12px"><span>${(() => { const g = gardeDeService(); return g ? `Relève ${JOURS[g.next.getDay()].toLowerCase()} ${g.next.getDate()} à <b>${p2(g.next.getHours())}h</b> · Garde ${g.suivante}` : `Relève à <b>${p2(S.conf.releve === undefined ? 7 : S.conf.releve)}h</b>`; })()}${mine ? ` · <b>${mine}</b> monté${mine > 1 ? 's' : ''} par toi` : ''}</span><span>${indispo ? `<b class="bad">${indispo} indispo</b>` : (n === vs.length && n ? '<b style="color:#7ff0b5">Tout est monté ✓</b>' : `${vs.length - n} à monter`)}</span></div>
   </section>
   ${S.outbox.length ? `<div class="card" style="margin-top:12px;border-color:rgba(255,174,31,.4)"><div class="row">${ico('wifi')}<div class="grow"><b>${S.outbox.length} contrôle${S.outbox.length > 1 ? 's' : ''} en attente d’envoi</b><div class="small muted">Gardé${S.outbox.length > 1 ? 's' : ''} sur le téléphone, envoi automatique dès que le réseau revient.</div></div><button class="btn sm" data-act="flush">Envoyer</button></div></div>` : ''}
   ${W ? `<button class="card" data-act="start" data-id="${esc(W.vid)}" style="margin-top:12px;width:100%;text-align:left;border-color:rgba(229,35,44,.5)"><div class="row"><span style="color:var(--red2)">${ico('truck')}</span><div class="grow"><b>Montée en cours : ${esc(veh(W.vid).nom)}</b><div class="small muted">Touche pour reprendre là où tu t’es arrêté</div></div>${ico('chev')}</div></button>` : ''}
@@ -1768,7 +1800,12 @@ function admCentreSheet() {
   const c = S.conf;
   sheet(`<h3>Centre et garde</h3>
   <label class="fld"><span>Nom du centre</span><input class="inp" id="ce-nom" value="${esc(c.centre)}"></label>
+  <label class="fld"><span>Jour de relève (montée en véhicule)</span><select class="inp" id="ce-jour"><option value="" ${hasJour() ? '' : 'selected'}>Chaque jour</option>${JOURS.map((j, i) => `<option value="${i}" ${hasJour() && +c.releveJour === i ? 'selected' : ''}>${j}</option>`).join('')}</select></label>
   <label class="fld"><span>Heure de relève (début de garde)</span><select class="inp" id="ce-rel">${Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${+c.releve === h ? 'selected' : ''}>${p2(h)} h 00</option>`).join('')}</select></label>
+  <div class="card" style="margin-bottom:14px"><b>Rotation des gardes</b><div class="small muted" style="margin:4px 0 10px">Avec un jour de relève : une garde différente chaque semaine, à tour de rôle.</div>
+    <label class="fld"><span>Garde de service en ce moment</span><select class="inp" id="ce-gs">${Array.from({ length: +(c.cycle && c.cycle.nb) || 4 }, (_, i) => `<option value="${i + 1}" ${(gardeDeService() || {}).n === i + 1 ? 'selected' : ''}>Garde ${i + 1}</option>`).join('')}</select></label>
+    ${Array.from({ length: +(c.cycle && c.cycle.nb) || 4 }, (_, i) => { const g = (c.gardes || [])[i] || {}; return `<div class="small" style="font-weight:700;margin:10px 2px 6px">Garde ${i + 1}</div><div class="row" style="align-items:stretch"><input class="inp ce-chef" data-i="${i}" placeholder="Chef de garde" value="${esc(g.chef || '')}"><input class="inp ce-adj" data-i="${i}" placeholder="Adjoint" value="${esc(g.adjoint || '')}"></div>`; }).join('')}
+  </div>
   <label class="fld"><span>Nouveau code responsable (laisser vide pour garder l’actuel)</span><input class="inp" id="ce-pin" inputmode="numeric" type="password" placeholder="4 chiffres ou plus"></label>
   <button class="btn red block" data-act="admCentreSave">${ico('check')} Enregistrer</button>
   <button class="btn ghost block" style="margin-top:6px" data-act="close">Fermer</button>`);
@@ -2175,7 +2212,12 @@ const ACT = {
     if (await savePompiers(L)) { admPompSheet(); toast(`${L.length - before} ajouté(s)${maj ? `, ${maj} mis à jour` : ''}`); }
   },
   async admCentreSave() {
-    const c = Object.assign({}, S.conf, { centre: $('#ce-nom').value.trim() || 'CS Cruzy / Quarante', releve: +$('#ce-rel').value });
+    const jour = $('#ce-jour').value;
+    const c = Object.assign({}, S.conf, { centre: $('#ce-nom').value.trim() || 'CS Cruzy / Quarante', releve: +$('#ce-rel').value, releveJour: jour === '' ? null : +jour });
+    c.gardes = [...document.querySelectorAll('.ce-chef')].map((el, i) => ({ chef: el.value.trim(), adjoint: (document.querySelectorAll('.ce-adj')[i] || {}).value.trim() }));
+    // la garde choisie est de service depuis la dernière relève (calculée avec les nouveaux réglages)
+    const keep = S.conf; S.conf = c; const st = gardeStart(); S.conf = keep;
+    c.cycle = { ref: `${st.getFullYear()}-${p2(st.getMonth() + 1)}-${p2(st.getDate())}T${p2(st.getHours())}:00`, garde: +$('#ce-gs').value, nb: c.gardes.length || 4 };
     const pin = $('#ce-pin').value.trim();
     if (pin) { if (pin.length < 4) { toast('4 chiffres minimum', true); return; } c.pin = await sha256('mv:' + pin); }
     if (await saveConf(c)) { closeSheet(); render(); }
