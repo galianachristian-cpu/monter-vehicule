@@ -6,7 +6,7 @@
 const EV_SOCLE = [
   ['liaison', 'Comprendre les attentes hydrauliques de la mission', 'Établit une liaison permanente avec la chaîne de commandement', 1],
   ['secu', 'Manipuler les dispositifs hydrauliques ou générateurs', 'Sécurise son environnement de travail (pompes)', 1],
-  ['dispo', '', 'Utilise correctement les dispositifs de l’engin (cran de pompe, accélération moteur, ouverture sauterelle)', 0],
+  ['dispo', '', 'Utilise correctement les dispositifs de l’engin (cran de pompe, accélération moteur, ouverture du retour cuve)', 0],
   ['dysf', '', 'Identifie et analyse un dysfonctionnement', 0],
   ['pression', 'Répondre aux besoins hydrauliques attendus', 'Définit une pression de refoulement correcte (longueur, section des tuyaux, dénivelé, pertes de charge diverses)', 1],
   ['pertes', '', 'Prend en compte l’évolution des pertes de charge', 0],
@@ -53,7 +53,7 @@ const EV_MAN = [
     ['Prépare le matériel PI ou BI pour le binôme'],
     ['Positionne le collecteur d’alimentation 100/2x65'],
     ['Y raccorde le demi-raccord donné par le chef du binôme'],
-    ['Une fois l’engin alimenté, complète sa cuve avec la sauterelle']] },
+    ['Une fois l’engin alimenté, complète sa cuve avec le retour cuve']] },
   { id: 'etb45', t: 'Alimentation par l’établissement (ETB 4.5)', steps: [
     ['Positionne le collecteur d’alimentation 100/2x65'],
     ['Prépare le matériel PI ou BI pour le binôme'],
@@ -73,7 +73,7 @@ const EV_MAN = [
     ['S’assure du bon fonctionnement de l’hydrant'],
     ['Prépare le matériel PI ou BI pour le binôme'],
     ['Positionne le collecteur 100/2x65 sur l’alimentation et y raccorde le demi-raccord donné par le chef du binôme'],
-    ['Une fois l’engin alimenté, complète sa cuve avec la vanne de remplissage de la citerne par la pompe (sauterelle)'],
+    ['Une fois l’engin alimenté, complète sa cuve avec la vanne de retour cuve'],
     ['Reste en contact (audio, visuel) avec ses binômes avant ouverture du PI ou BI', 1],
     ['Si 2e ligne : finit l’établissement avec un tuyau de 70/20 m plutôt qu’un autre de 70/40 m'],
     ['Vérifie visuellement l’établissement'],
