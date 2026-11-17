@@ -985,6 +985,7 @@ function render() {
     case 'defauts': html = shell(viewDefauts()); break;
     case 'historique': html = shell(viewHist()); break;
     case 'reglages': html = shell(viewReglages()); break;
+    case 'eval': html = viewEval(); break;
     default: S.view = 'home'; html = shell(viewHome());
   }
   app.innerHTML = html;
@@ -1759,6 +1760,7 @@ function adminPanel() {
   return `<div class="list">
     <button class="li" data-act="admVeh"><div class="lic">${ico('truck')}</div><div class="grow"><div class="lt">Engins du centre</div><div class="ls">${vehs(true).length} engins · nom, plaque, type, niveaux</div></div>${ico('chev', 'chev')}</button>
     <button class="li" data-act="admPomp"><div class="lic">${ico('user')}</div><div class="grow"><div class="lt">Pompiers du centre</div><div class="ls">${pompiers().length} pompier${pompiers().length > 1 ? 's' : ''} · ajouter, supprimer, importer une liste</div></div>${ico('chev', 'chev')}</button>
+    <button class="li" data-act="evList"><div class="lic">${ico('check')}</div><div class="grow"><div class="lt">Évaluation conducteur</div><div class="ls">Évaluer un pompier (COD1), historique, fiche à imprimer</div></div>${ico('chev', 'chev')}</button>
     <button class="li" data-act="admCentre"><div class="lic">${ico('gear')}</div><div class="grow"><div class="lt">Centre et garde</div><div class="ls">Nom, heure de relève (${p2(S.conf.releve || 7)}h), code responsable</div></div>${ico('chev', 'chev')}</button>
     ${S.cfg.demo ? '' : `<button class="li" data-act="admLink"><div class="lic">${ico('link')}</div><div class="grow"><div class="lt">Activer un téléphone</div><div class="ls">QR code et lien à partager aux pompiers</div></div>${ico('chev', 'chev')}</button>`}
     <button class="li" data-act="admLabels"><div class="lic">${ico('qr')}</div><div class="grow"><div class="lt">Étiquettes QR des pochettes</div><div class="ls">Imprimer, personnage, anciens QR codes</div></div>${ico('chev', 'chev')}</button>
@@ -2312,5 +2314,6 @@ openPendingEngin();
 if (S.cfg) sync(true);
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 </script>
+<script src="eval-conducteur.js"></script>
 </body>
 </html>
