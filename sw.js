@@ -1,5 +1,5 @@
 /* Montée en véhicule : service worker pour l'installation et l'usage hors ligne */
-const CACHE = 'monter-vehicule-v11';
+const CACHE = 'monter-vehicule-v12';
 const CORE = ['./', './index.html', './fat.js', './eval-conducteur.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './engins/ccf-825.webp'];
 
 self.addEventListener('install', e => {
@@ -27,4 +27,20 @@ self.addEventListener('fetch', e => {
   if (url.origin === location.origin) {
     e.respondWith(caches.match(req).then(hit => { const net = fetch(req).then(r => { const c = r.clone(); caches.open(CACHE).then(x => x.put(req, c)); return r; }).catch(() => hit); return hit || net; }));
   }
+});
+
+// rappel du vendredi : notification reçue même appli fermée
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (x) { d = { body: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Montée en véhicule', {
+    body: d.body || '', icon: 'icon-192.png', badge: 'icon-192.png', tag: 'rappel-montee', renotify: true, data: { url: d.url || './' }
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    const c = cs.find(x => 'focus' in x);
+    return c ? c.focus() : self.clients.openWindow((e.notification.data && e.notification.data.url) || './');
+  }));
 });
