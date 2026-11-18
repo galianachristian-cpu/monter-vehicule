@@ -1,6 +1,6 @@
 /* Montée en véhicule : service worker pour l'installation et l'usage hors ligne */
-const CACHE = 'monter-vehicule-v14';
-const CORE = ['./', './index.html', './fat.js', './eval-conducteur.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './engins/ccf-825.webp', './engins/fpt-040.webp'];
+const CACHE = 'monter-vehicule-v15';
+const CORE = ['./', './index.html', './fat.js', './eval-conducteur.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './engins/ccf-825.webp', './engins/fpt-040.webp', './engins/vsrtu-070.webp'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(CORE.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));

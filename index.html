@@ -609,7 +609,8 @@ function lights(x, y, w) {
 /* vraies images des engins (dossier engins/) : position des gyrophares en % de l'image */
 const ENGIN_IMG = {
   'ccf-825': { src: 'engins/ccf-825.webp', gyro: [[87, 9], [60, 7]] },
-  'fpt-040': { src: 'engins/fpt-040.webp', gyro: [[86, 5], [90, 5]] }
+  'fpt-040': { src: 'engins/fpt-040.webp', gyro: [[86, 5], [90, 5]] },
+  'vsrtu-070': { src: 'engins/vsrtu-070.webp', gyro: [[20, 20], [69, 20]] }
 };
 function vehArt(v) {
   const im = v && (ENGIN_IMG[v.id] || (v.img ? { src: v.img, gyro: [] } : null));
